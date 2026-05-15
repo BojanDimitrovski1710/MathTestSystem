@@ -1,0 +1,6 @@
+@MathTestSystem.GradingService_HostAddress = http://localhost:5096
+
+GET {{MathTestSystem.GradingService_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

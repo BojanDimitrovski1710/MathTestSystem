@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="MathTestSystem.Domain/MathTestSystem.Domain.csproj" />
+    <Project Path="MathTestSystem.GradingService/MathTestSystem.GradingService.csproj" />
+    <Project Path="MathTestSystem.MathProcessor/MathTestSystem.MathProcessor.csproj" />
+    <Project Path="MathTestSystem.StudentApp/MathTestSystem.StudentApp.csproj" />
+    <Project Path="MathTestSystem.StudentService/MathTestSystem.StudentService.csproj" />
+    <Project Path="MathTestSystem.TeacherApp/MathTestSystem.TeacherApp.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="MathTestSystem.GradingService.Tests/MathTestSystem.GradingService.Tests.csproj" />
+    <Project Path="MathTestSystem.MathProcessor.Tests/MathTestSystem.MathProcessor.Tests.csproj" />
+  </Folder>
+</Solution>
