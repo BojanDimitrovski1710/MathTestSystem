@@ -4,10 +4,9 @@ namespace MathTestSystem.Domain.Interfaces;
 
 public interface IStudentRepository
 {
-    Task<Student?> GetByIdAsync(int id);
     Task<Student?> GetByUidAsync(Guid uid);
     Task<IEnumerable<Student>> GetByTeacherUidAsync(Guid teacherUid);
     Task<Student> AddAsync(Student student);
     Task UpdateAsync(Student student);
-    Task DeleteAsync(int id);
+    Task DeleteAsync(Guid uid);
 }

@@ -14,11 +14,6 @@ public class StudentRepository : IStudentRepository
         _context = context;
     }
 
-    public async Task<Student?> GetByIdAsync(int id)
-    {
-        return await _context.Students.FindAsync(id);
-    }
-
     public async Task<Student?> GetByUidAsync(Guid uid)
     {
         return await _context.Students
@@ -46,9 +41,11 @@ public class StudentRepository : IStudentRepository
         await _context.SaveChangesAsync();
     }
 
-    public async Task DeleteAsync(int id)
+    public async Task DeleteAsync(Guid uid)
     {
-        Student? student = await _context.Students.FindAsync(id);
+        Student? student = await _context.Students
+            .FirstOrDefaultAsync(s => s.Uid == uid);
+
         if (student is not null)
         {
             _context.Students.Remove(student);

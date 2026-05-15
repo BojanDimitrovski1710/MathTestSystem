@@ -14,11 +14,6 @@ public class TeacherRepository : ITeacherRepository
         _context = context;
     }
 
-    public async Task<Teacher?> GetByIdAsync(int id)
-    {
-        return await _context.Teachers.FindAsync(id);
-    }
-
     public async Task<Teacher?> GetByUidAsync(Guid uid)
     {
         return await _context.Teachers
@@ -45,9 +40,11 @@ public class TeacherRepository : ITeacherRepository
         await _context.SaveChangesAsync();
     }
 
-    public async Task DeleteAsync(int id)
+    public async Task DeleteAsync(Guid uid)
     {
-        Teacher? teacher = await _context.Teachers.FindAsync(id);
+        Teacher? teacher = await _context.Teachers
+            .FirstOrDefaultAsync(t => t.Uid == uid);
+
         if (teacher is not null)
         {
             _context.Teachers.Remove(teacher);

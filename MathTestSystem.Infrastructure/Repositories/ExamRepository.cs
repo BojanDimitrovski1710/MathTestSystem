@@ -14,11 +14,6 @@ public class ExamRepository : IExamRepository
         _context = context;
     }
 
-    public async Task<Exam?> GetByIdAsync(int id)
-    {
-        return await _context.Exams.FindAsync(id);
-    }
-
     public async Task<IEnumerable<Exam>> GetByStudentUidAsync(Guid studentUid)
     {
         return await _context.Exams
