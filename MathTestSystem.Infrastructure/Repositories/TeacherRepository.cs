@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using MathTestSystem.Domain.Constants;
 using MathTestSystem.Domain.Entities;
 using MathTestSystem.Domain.Interfaces;
 using MathTestSystem.Infrastructure.Data;
@@ -36,6 +37,10 @@ public class TeacherRepository : ITeacherRepository
 
     public async Task UpdateAsync(Teacher teacher)
     {
+        bool exists = await _context.Teachers.AnyAsync(t => t.Uid == teacher.Uid);
+        if (!exists)
+            throw new InvalidOperationException(ResultCodes.TeacherNotFound);
+
         _context.Teachers.Update(teacher);
         await _context.SaveChangesAsync();
     }
@@ -45,10 +50,10 @@ public class TeacherRepository : ITeacherRepository
         Teacher? teacher = await _context.Teachers
             .FirstOrDefaultAsync(t => t.Uid == uid);
 
-        if (teacher is not null)
-        {
-            _context.Teachers.Remove(teacher);
-            await _context.SaveChangesAsync();
-        }
+        if (teacher is null)
+            throw new InvalidOperationException(ResultCodes.TeacherNotFound);
+
+        _context.Teachers.Remove(teacher);
+        await _context.SaveChangesAsync();
     }
 }
