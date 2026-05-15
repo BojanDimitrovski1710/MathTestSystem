@@ -14,4 +14,12 @@ public static class ResultCodes
     public const string ExpressionEvaluationFailed = "EXPRESSION_EVALUATION_FAILED";
 
     #endregion
+
+    #region Repository
+
+    public const string TeacherNotFound = "TEACHER_NOT_FOUND";
+    public const string StudentNotFound = "STUDENT_NOT_FOUND";
+    public const string ExamNotFound = "EXAM_NOT_FOUND";
+
+    #endregion
 }

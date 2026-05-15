@@ -4,9 +4,8 @@ namespace MathTestSystem.Domain.Interfaces;
 
 public interface IExamRepository
 {
-    Task<Exam?> GetByIdAsync(int id);
-    Task<IEnumerable<Exam>> GetByStudentIdAsync(string studentId);
-    Task<Exam?> GetWithTasksAsync(int id);
+    Task<IEnumerable<Exam>> GetByStudentUidAsync(Guid studentUid);
+    Task<Exam?> GetWithTasksAsync(Guid uid);
     Task<Exam> AddAsync(Exam exam);
     Task UpdateAsync(Exam exam);
 }

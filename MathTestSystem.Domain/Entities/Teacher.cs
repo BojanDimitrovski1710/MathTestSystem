@@ -5,9 +5,10 @@ public class Teacher
     public int Id { get; set; }
 
     /// <summary>
-    /// The teacher identifier as it appears in the uploaded XML (e.g. "11111").
+    /// Publicly exposed identifier used in API routes.
+    /// Generated on creation — prevents sequential ID enumeration attacks.
     /// </summary>
-    public string TeacherId { get; set; } = string.Empty;
+    public Guid Uid { get; set; } = Guid.NewGuid();
 
     public string Name { get; set; } = string.Empty;
 
