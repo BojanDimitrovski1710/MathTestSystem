@@ -19,11 +19,11 @@ public class ExamRepository : IExamRepository
         return await _context.Exams.FindAsync(id);
     }
 
-    public async Task<IEnumerable<Exam>> GetByStudentIdAsync(string studentId)
+    public async Task<IEnumerable<Exam>> GetByStudentUidAsync(Guid studentUid)
     {
         return await _context.Exams
             .Include(e => e.Tasks)
-            .Where(e => e.Student.StudentId == studentId)
+            .Where(e => e.Student.Uid == studentUid)
             .ToListAsync();
     }
 
