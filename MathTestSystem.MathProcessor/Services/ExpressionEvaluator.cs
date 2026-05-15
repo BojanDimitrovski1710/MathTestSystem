@@ -1,9 +1,7 @@
+using System.Globalization;
+using MathTestSystem.Domain.Constants;
 using MathTestSystem.MathProcessor.Interfaces;
 using MathTestSystem.MathProcessor.Models;
-using System.Collections;
-using System.Globalization;
-using static System.Net.WebRequestMethods;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace MathTestSystem.MathProcessor.Services;
 
@@ -41,7 +39,7 @@ public class ExpressionEvaluator : IExpressionEvaluator
         try
         {
             if (string.IsNullOrWhiteSpace(expression))
-                return EvaluationResult.Fail("Expression cannot be empty.");
+                return EvaluationResult.Fail(ErrorCodes.ExpressionEmpty);
 
             List<string> tokens = Tokenize(expression);
             Queue<string> postfix = ToPostfix(tokens);
@@ -50,11 +48,11 @@ public class ExpressionEvaluator : IExpressionEvaluator
         }
         catch (DivideByZeroException)
         {
-            return EvaluationResult.Fail("Division by zero.");
+            return EvaluationResult.Fail(ErrorCodes.ExpressionDivisionByZero);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return EvaluationResult.Fail($"Invalid expression: {ex.Message}");
+            return EvaluationResult.Fail(ErrorCodes.ExpressionEvaluationFailed);
         }
     }
 
@@ -106,7 +104,7 @@ public class ExpressionEvaluator : IExpressionEvaluator
             }
             else
             {
-                throw new InvalidOperationException($"Unexpected character '{c}' at position {i}.");
+                throw new InvalidOperationException(ErrorCodes.ExpressionInvalidCharacter);
             }
         }
 
@@ -148,7 +146,7 @@ public class ExpressionEvaluator : IExpressionEvaluator
                     output.Enqueue(operators.Pop());
 
                 if (operators.Count == 0)
-                    throw new InvalidOperationException("Mismatched parentheses.");
+                    throw new InvalidOperationException(ErrorCodes.ExpressionMismatchedParentheses);
 
                 operators.Pop(); // discard the "("
             }
@@ -165,14 +163,14 @@ public class ExpressionEvaluator : IExpressionEvaluator
             }
             else
             {
-                throw new InvalidOperationException($"Unknown token '{token}'.");
+                throw new InvalidOperationException(ErrorCodes.ExpressionUnknownToken);
             }
         }
 
         while (operators.Count > 0)
         {
             if (operators.Peek() == "(")
-                throw new InvalidOperationException("Mismatched parentheses.");
+                throw new InvalidOperationException(ErrorCodes.ExpressionMismatchedParentheses);
             output.Enqueue(operators.Pop());
         }
 
@@ -197,7 +195,7 @@ public class ExpressionEvaluator : IExpressionEvaluator
             else
             {
                 if (stack.Count < 2)
-                    throw new InvalidOperationException("Insufficient operands for operator.");
+                    throw new InvalidOperationException(ErrorCodes.ExpressionInsufficientOperands);
 
                 decimal right = stack.Pop();
                 decimal left = stack.Pop();
@@ -210,7 +208,7 @@ public class ExpressionEvaluator : IExpressionEvaluator
                     "/" => right == 0
                         ? throw new DivideByZeroException()
                         : left / right,
-                    _ => throw new InvalidOperationException($"Unknown operator '{token}'.")
+                    _ => throw new InvalidOperationException(ErrorCodes.ExpressionUnknownToken)
                 };
 
                 stack.Push(result);
@@ -218,7 +216,7 @@ public class ExpressionEvaluator : IExpressionEvaluator
         }
 
         if (stack.Count != 1)
-            throw new InvalidOperationException("Invalid expression structure.");
+            throw new InvalidOperationException(ErrorCodes.ExpressionInvalidStructure);
 
         return stack.Pop();
     }

@@ -1,3 +1,4 @@
+using MathTestSystem.Domain.Constants;
 using MathTestSystem.MathProcessor.Models;
 using MathTestSystem.MathProcessor.Services;
 
@@ -130,7 +131,7 @@ public class ExpressionEvaluatorTests
     {
         EvaluationResult result = _evaluator.Evaluate("5/0");
         Assert.False(result.Success);
-        Assert.Contains("zero", result.ErrorMessage, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(ErrorCodes.ExpressionDivisionByZero, result.ErrorCode);
     }
 
     [Theory]
