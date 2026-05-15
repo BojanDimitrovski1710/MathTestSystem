@@ -5,6 +5,12 @@ public class Exam
     public int Id { get; set; }
 
     /// <summary>
+    /// Publicly exposed identifier used in API routes.
+    /// Generated on creation — prevents sequential ID enumeration attacks.
+    /// </summary>
+    public Guid Uid { get; set; } = Guid.NewGuid();
+
+    /// <summary>
     /// The exam identifier as it appears in the uploaded XML (e.g. "1").
     /// </summary>
     public string ExamId { get; set; } = string.Empty;

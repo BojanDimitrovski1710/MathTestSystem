@@ -22,12 +22,12 @@ public class ExamRepository : IExamRepository
             .ToListAsync();
     }
 
-    public async Task<Exam?> GetWithTasksAsync(int id)
+    public async Task<Exam?> GetWithTasksAsync(Guid uid)
     {
         return await _context.Exams
             .Include(e => e.Tasks)
             .Include(e => e.Student)
-            .FirstOrDefaultAsync(e => e.Id == id);
+            .FirstOrDefaultAsync(e => e.Uid == uid);
     }
 
     public async Task<Exam> AddAsync(Exam exam)

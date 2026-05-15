@@ -25,7 +25,7 @@ public class AppDbContext : DbContext
 
             entity.Property(t => t.Uid)
                 .IsRequired()
-                .ValueGeneratedNever(); // We control generation via Guid.NewGuid() in the entity
+                .ValueGeneratedNever();
 
             entity.HasIndex(t => t.Uid)
                 .IsUnique();
@@ -49,7 +49,7 @@ public class AppDbContext : DbContext
 
             entity.Property(s => s.Uid)
                 .IsRequired()
-                .ValueGeneratedNever(); // We control generation via Guid.NewGuid() in the entity
+                .ValueGeneratedNever();
 
             entity.HasIndex(s => s.Uid)
                 .IsUnique();
@@ -70,6 +70,13 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Exam>(entity =>
         {
             entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.Uid)
+                .IsRequired()
+                .ValueGeneratedNever();
+
+            entity.HasIndex(e => e.Uid)
+                .IsUnique();
 
             entity.Property(e => e.ExamId)
                 .IsRequired()
