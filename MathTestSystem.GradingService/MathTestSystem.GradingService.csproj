@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MathTestSystem.Domain\MathTestSystem.Domain.csproj" />
+    <ProjectReference Include="..\MathTestSystem.Infrastructure\MathTestSystem.Infrastructure.csproj" />
     <ProjectReference Include="..\MathTestSystem.MathProcessor\MathTestSystem.MathProcessor.csproj" />
   </ItemGroup>
 
