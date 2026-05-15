@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
-using Microsoft.Extensions.Configuration;
 
 namespace MathTestSystem.Infrastructure.Data;
 
@@ -8,22 +7,17 @@ namespace MathTestSystem.Infrastructure.Data;
 /// Used by EF Core Tools at design time to instantiate AppDbContext
 /// when running migrations (Add-Migration, Update-Database, etc.).
 /// Not used at runtime — the application registers its own DbContext via DI.
-/// Connection string is read from the Infrastructure project's appsettings.json.
 /// </summary>
 public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
 {
     public AppDbContext CreateDbContext(string[] args)
     {
-        IConfigurationRoot configuration = new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
-            .Build();
-
-        string connectionString = configuration.GetConnectionString("DefaultConnection")
-            ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found in appsettings.json.");
-
         DbContextOptionsBuilder<AppDbContext> optionsBuilder = new();
-        optionsBuilder.UseSqlServer(connectionString);
+
+        // Design-time only connection string.
+        // The runtime connection string is provided via appsettings.json in each API service.
+        optionsBuilder.UseSqlServer(
+            "Server=localhost,1433;Database=MathTestDb;User Id=sa;Password=MathTest_Sa!2024;TrustServerCertificate=True;");
 
         return new AppDbContext(optionsBuilder.Options);
     }
