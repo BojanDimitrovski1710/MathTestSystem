@@ -1,6 +1,6 @@
 namespace MathTestSystem.Domain.Constants;
 
-public static class ErrorCodes
+public static class ResultCodes
 {
     #region Expression
 

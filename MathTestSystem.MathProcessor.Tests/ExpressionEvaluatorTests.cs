@@ -131,7 +131,7 @@ public class ExpressionEvaluatorTests
     {
         EvaluationResult result = _evaluator.Evaluate("5/0");
         Assert.False(result.Success);
-        Assert.Equal(ErrorCodes.ExpressionDivisionByZero, result.ErrorCode);
+        Assert.Equal(ResultCodes.ExpressionDivisionByZero, result.ErrorCode);
     }
 
     [Theory]

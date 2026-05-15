@@ -39,7 +39,7 @@ public class ExpressionEvaluator : IExpressionEvaluator
         try
         {
             if (string.IsNullOrWhiteSpace(expression))
-                return EvaluationResult.Fail(ErrorCodes.ExpressionEmpty);
+                return EvaluationResult.Fail(ResultCodes.ExpressionEmpty);
 
             List<string> tokens = Tokenize(expression);
             Queue<string> postfix = ToPostfix(tokens);
@@ -48,11 +48,11 @@ public class ExpressionEvaluator : IExpressionEvaluator
         }
         catch (DivideByZeroException)
         {
-            return EvaluationResult.Fail(ErrorCodes.ExpressionDivisionByZero);
+            return EvaluationResult.Fail(ResultCodes.ExpressionDivisionByZero);
         }
         catch (Exception)
         {
-            return EvaluationResult.Fail(ErrorCodes.ExpressionEvaluationFailed);
+            return EvaluationResult.Fail(ResultCodes.ExpressionEvaluationFailed);
         }
     }
 
@@ -104,7 +104,7 @@ public class ExpressionEvaluator : IExpressionEvaluator
             }
             else
             {
-                throw new InvalidOperationException(ErrorCodes.ExpressionInvalidCharacter);
+                throw new InvalidOperationException(ResultCodes.ExpressionInvalidCharacter);
             }
         }
 
@@ -146,7 +146,7 @@ public class ExpressionEvaluator : IExpressionEvaluator
                     output.Enqueue(operators.Pop());
 
                 if (operators.Count == 0)
-                    throw new InvalidOperationException(ErrorCodes.ExpressionMismatchedParentheses);
+                    throw new InvalidOperationException(ResultCodes.ExpressionMismatchedParentheses);
 
                 operators.Pop(); // discard the "("
             }
@@ -163,14 +163,14 @@ public class ExpressionEvaluator : IExpressionEvaluator
             }
             else
             {
-                throw new InvalidOperationException(ErrorCodes.ExpressionUnknownToken);
+                throw new InvalidOperationException(ResultCodes.ExpressionUnknownToken);
             }
         }
 
         while (operators.Count > 0)
         {
             if (operators.Peek() == "(")
-                throw new InvalidOperationException(ErrorCodes.ExpressionMismatchedParentheses);
+                throw new InvalidOperationException(ResultCodes.ExpressionMismatchedParentheses);
             output.Enqueue(operators.Pop());
         }
 
@@ -195,7 +195,7 @@ public class ExpressionEvaluator : IExpressionEvaluator
             else
             {
                 if (stack.Count < 2)
-                    throw new InvalidOperationException(ErrorCodes.ExpressionInsufficientOperands);
+                    throw new InvalidOperationException(ResultCodes.ExpressionInsufficientOperands);
 
                 decimal right = stack.Pop();
                 decimal left = stack.Pop();
@@ -208,7 +208,7 @@ public class ExpressionEvaluator : IExpressionEvaluator
                     "/" => right == 0
                         ? throw new DivideByZeroException()
                         : left / right,
-                    _ => throw new InvalidOperationException(ErrorCodes.ExpressionUnknownToken)
+                    _ => throw new InvalidOperationException(ResultCodes.ExpressionUnknownToken)
                 };
 
                 stack.Push(result);
@@ -216,7 +216,7 @@ public class ExpressionEvaluator : IExpressionEvaluator
         }
 
         if (stack.Count != 1)
-            throw new InvalidOperationException(ErrorCodes.ExpressionInvalidStructure);
+            throw new InvalidOperationException(ResultCodes.ExpressionInvalidStructure);
 
         return stack.Pop();
     }
