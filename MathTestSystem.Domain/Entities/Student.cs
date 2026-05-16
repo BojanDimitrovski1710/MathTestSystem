@@ -10,7 +10,10 @@ public class Student
     /// </summary>
     public Guid Uid { get; set; } = Guid.NewGuid();
 
-    public string Name { get; set; } = string.Empty;
+    /// <summary>
+    /// The student identifier as it appears in the uploaded XML (e.g. "12345").
+    /// </summary>
+    public string StudentId { get; set; } = string.Empty;
 
     public int TeacherId { get; set; }
     public Teacher Teacher { get; set; } = null!;
