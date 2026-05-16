@@ -30,9 +30,12 @@ public class AppDbContext : DbContext
             entity.HasIndex(t => t.Uid)
                 .IsUnique();
 
-            entity.Property(t => t.Name)
+            entity.Property(t => t.TeacherId)
                 .IsRequired()
-                .HasMaxLength(200);
+                .HasMaxLength(50);
+
+            entity.HasIndex(t => t.TeacherId)
+                .IsUnique();
 
             entity.HasMany(t => t.Students)
                 .WithOne(s => s.Teacher)
@@ -54,9 +57,12 @@ public class AppDbContext : DbContext
             entity.HasIndex(s => s.Uid)
                 .IsUnique();
 
-            entity.Property(s => s.Name)
+            entity.Property(s => s.StudentId)
                 .IsRequired()
-                .HasMaxLength(200);
+                .HasMaxLength(50);
+
+            entity.HasIndex(s => s.StudentId)
+                .IsUnique();
 
             entity.HasMany(s => s.Exams)
                 .WithOne(e => e.Student)

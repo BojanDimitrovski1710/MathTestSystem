@@ -1,34 +1,28 @@
-var builder = WebApplication.CreateBuilder(args);
+using MathTestSystem.GradingService.Endpoints;
+using MathTestSystem.GradingService.Parsing;
+using MathTestSystem.GradingService.Services;
+using MathTestSystem.Infrastructure.Extensions;
+using MathTestSystem.MathProcessor.Interfaces;
+using MathTestSystem.MathProcessor.Services;
 
-// Add services to the container.
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-var app = builder.Build();
+builder.Services.AddOpenApi();
 
-// Configure the HTTP request pipeline.
+string connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' is not configured.");
+
+builder.Services.AddInfrastructure(connectionString);
+builder.Services.AddSingleton<IExpressionEvaluator, ExpressionEvaluator>();
+builder.Services.AddScoped<IExamXmlParser, ExamXmlParser>();
+builder.Services.AddScoped<IGradingService, ExamGradingService>();
+
+WebApplication app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+    app.MapOpenApi();
 
 app.UseHttpsRedirection();
-
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-});
+app.MapExamEndpoints();
 
 app.Run();
-
-internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
