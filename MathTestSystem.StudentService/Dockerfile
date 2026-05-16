@@ -11,6 +11,7 @@ WORKDIR /src
 # Copy project files for all referenced projects so restore can resolve dependencies
 COPY ["MathTestSystem.StudentService/MathTestSystem.StudentService.csproj", "MathTestSystem.StudentService/"]
 COPY ["MathTestSystem.Domain/MathTestSystem.Domain.csproj", "MathTestSystem.Domain/"]
+COPY ["MathTestSystem.Infrastructure/MathTestSystem.Infrastructure.csproj", "MathTestSystem.Infrastructure/"]
 
 RUN dotnet restore "MathTestSystem.StudentService/MathTestSystem.StudentService.csproj"
 
