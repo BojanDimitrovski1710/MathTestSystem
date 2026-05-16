@@ -1,10 +1,6 @@
-using MathTestSystem.GradingService.Endpoints;
-using MathTestSystem.GradingService.Parsing;
-using MathTestSystem.GradingService.Services;
+using MathTestSystem.ApiGateway.Endpoints;
 using MathTestSystem.Infrastructure.Data;
 using MathTestSystem.Infrastructure.Extensions;
-using MathTestSystem.MathProcessor.Interfaces;
-using MathTestSystem.MathProcessor.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,16 +13,24 @@ string connectionString = builder.Configuration.GetConnectionString("DefaultConn
 
 builder.Services.AddInfrastructure(connectionString);
 builder.Services.AddJwtAuthentication(builder.Configuration);
-builder.Services.AddSingleton<IExpressionEvaluator, ExpressionEvaluator>();
-builder.Services.AddScoped<IExamXmlParser, ExamXmlParser>();
-builder.Services.AddScoped<IGradingService, ExamGradingService>();
+
+builder.Services.AddReverseProxy()
+    .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
 
 WebApplication app = builder.Build();
 
+// Seed the admin user on startup
 using (IServiceScope scope = app.Services.CreateScope())
 {
     AppDbContext db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await db.Database.MigrateAsync();
+
+    UserManager<AppUser> userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
+    if (await userManager.FindByNameAsync("admin") is null)
+    {
+        AppUser admin = new() { UserName = "admin" };
+        await userManager.CreateAsync(admin, "admin");
+    }
 }
 
 if (app.Environment.IsDevelopment())
@@ -35,6 +39,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapExamEndpoints();
+
+app.MapAuthEndpoints();
+app.MapReverseProxy();
 
 app.Run();

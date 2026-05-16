@@ -11,6 +11,7 @@ string connectionString = builder.Configuration.GetConnectionString("DefaultConn
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' is not configured.");
 
 builder.Services.AddInfrastructure(connectionString);
+builder.Services.AddJwtAuthentication(builder.Configuration);
 
 WebApplication app = builder.Build();
 
@@ -24,6 +25,8 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 
 app.UseHttpsRedirection();
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapStudentEndpoints();
 app.MapTeacherEndpoints();
 

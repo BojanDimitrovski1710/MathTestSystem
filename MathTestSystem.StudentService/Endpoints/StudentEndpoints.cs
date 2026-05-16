@@ -16,13 +16,17 @@ public static class StudentEndpoints
             .WithName("GetStudentExams")
             .WithSummary("Returns a summary of all exams for the given student.")
             .Produces<IReadOnlyList<ExamSummaryResponse>>()
-            .ProducesProblem(StatusCodes.Status404NotFound);
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .RequireAuthorization();
 
         group.MapGet("/{studentUid:guid}/exams/{examUid:guid}", GetExamDetail)
             .WithName("GetStudentExamDetail")
             .WithSummary("Returns the full detail of a single exam, including all tasks.")
             .Produces<ExamDetailResponse>()
-            .ProducesProblem(StatusCodes.Status404NotFound);
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .RequireAuthorization();
     }
 
     private static async Task<IResult> GetExams(

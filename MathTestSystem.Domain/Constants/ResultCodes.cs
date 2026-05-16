@@ -39,6 +39,7 @@ public static class ResultCodes
     #region Api
 
     public const string RequestBodyEmpty = "REQUEST_BODY_EMPTY";
+    public const string InvalidCredentials = "INVALID_CREDENTIALS";
 
     #endregion
 }

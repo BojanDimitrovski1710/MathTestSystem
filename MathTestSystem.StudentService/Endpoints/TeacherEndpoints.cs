@@ -12,14 +12,16 @@ public static class TeacherEndpoints
         RouteGroupBuilder group = app.MapGroup("/api/teachers")
             .WithTags("Teachers");
 
-        group.MapGet("/{teacherId}/students", GetTeacherStudents)
+        group.MapGet("/{teacherId}/students", GetStudents)
             .WithName("GetTeacherStudents")
             .WithSummary("Returns all students and their exam summaries for the given teacher.")
-            .Produces<TeacherStudentsResponse>()
-            .ProducesProblem(StatusCodes.Status404NotFound);
+            .Produces<IReadOnlyList<StudentSummaryResponse>>()
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .RequireAuthorization();
     }
 
-    private static async Task<IResult> GetTeacherStudents(
+    private static async Task<IResult> GetStudents(
         string teacherId,
         ITeacherRepository teacherRepo,
         IStudentRepository studentRepo,
@@ -32,25 +34,25 @@ public static class TeacherEndpoints
 
         IEnumerable<Student> students = await studentRepo.GetByTeacherUidAsync(teacher.Uid);
 
-        List<StudentOverviewResponse> overviews = [];
+        List<StudentSummaryResponse> response = [];
 
         foreach (Student student in students)
         {
             IEnumerable<Exam> exams = await examRepo.GetByStudentUidAsync(student.Uid);
 
-            overviews.Add(new StudentOverviewResponse(
-                student.Uid,
-                student.StudentId,
-                exams.Select(e => new ExamSummaryResponse(
+            IReadOnlyList<ExamSummaryResponse> examSummaries = exams
+                .Select(e => new ExamSummaryResponse(
                     e.Uid,
                     e.ExamId,
                     e.SubmittedAt,
                     e.Score,
                     e.Tasks.Count,
                     e.Tasks.Count(t => t.IsCorrect)))
-                .ToList()));
+                .ToList();
+
+            response.Add(new StudentSummaryResponse(student.Uid, student.StudentId, examSummaries));
         }
 
-        return Results.Ok(new TeacherStudentsResponse(teacherId, overviews));
+        return Results.Ok(response);
     }
 }
