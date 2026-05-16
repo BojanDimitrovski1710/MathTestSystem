@@ -1,3 +1,4 @@
+using MathTestSystem.Domain.Constants;
 using MathTestSystem.GradingService.Models;
 using MathTestSystem.GradingService.Services;
 
@@ -26,7 +27,7 @@ public static class ExamEndpoints
         string xml = await reader.ReadToEndAsync();
 
         if (string.IsNullOrWhiteSpace(xml))
-            return Results.BadRequest("Request body must contain XML.");
+            return Results.BadRequest(ResultCodes.RequestBodyEmpty);
 
         try
         {
