@@ -1,6 +1,7 @@
 using MathTestSystem.Infrastructure.Data;
 using MathTestSystem.Infrastructure.Extensions;
 using MathTestSystem.StudentService.Endpoints;
+using Microsoft.EntityFrameworkCore;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 

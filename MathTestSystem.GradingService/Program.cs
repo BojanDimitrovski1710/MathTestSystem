@@ -6,6 +6,7 @@ using MathTestSystem.Infrastructure.Extensions;
 using MathTestSystem.MathProcessor.Interfaces;
 using MathTestSystem.MathProcessor.Services;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 

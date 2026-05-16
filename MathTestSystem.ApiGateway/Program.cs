@@ -2,6 +2,7 @@ using MathTestSystem.ApiGateway.Endpoints;
 using MathTestSystem.Infrastructure.Data;
 using MathTestSystem.Infrastructure.Extensions;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
