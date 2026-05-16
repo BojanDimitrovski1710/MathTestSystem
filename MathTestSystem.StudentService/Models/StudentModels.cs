@@ -15,6 +15,11 @@ public record ExamDetailResponse(
     decimal Score,
     IReadOnlyList<TaskResponse> Tasks);
 
+public record StudentSummaryResponse(
+    Guid StudentUid,
+    string StudentId,
+    IReadOnlyList<ExamSummaryResponse> Exams);
+
 /// <param name="ErrorCode">Populated when the expression could not be evaluated. See ResultCodes.</param>
 public record TaskResponse(
     string TaskId,

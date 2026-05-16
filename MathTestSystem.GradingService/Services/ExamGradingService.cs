@@ -2,8 +2,10 @@ using MathTestSystem.Domain.Entities;
 using MathTestSystem.Domain.Interfaces;
 using MathTestSystem.GradingService.Models;
 using MathTestSystem.GradingService.Parsing;
+using MathTestSystem.Infrastructure.Data;
 using MathTestSystem.MathProcessor.Interfaces;
 using MathTestSystem.MathProcessor.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace MathTestSystem.GradingService.Services;
 
@@ -14,19 +16,22 @@ public class ExamGradingService : IGradingService
     private readonly ITeacherRepository _teacherRepo;
     private readonly IStudentRepository _studentRepo;
     private readonly IExamRepository _examRepo;
+    private readonly UserManager<AppUser> _userManager;
 
     public ExamGradingService(
         IExamXmlParser parser,
         IExpressionEvaluator evaluator,
         ITeacherRepository teacherRepo,
         IStudentRepository studentRepo,
-        IExamRepository examRepo)
+        IExamRepository examRepo,
+        UserManager<AppUser> userManager)
     {
         _parser = parser;
         _evaluator = evaluator;
         _teacherRepo = teacherRepo;
         _studentRepo = studentRepo;
         _examRepo = examRepo;
+        _userManager = userManager;
     }
 
     public async Task<GradeExamResponse> GradeAsync(string xml)
@@ -68,6 +73,7 @@ public class ExamGradingService : IGradingService
         if (teacher is not null)
             return teacher;
 
+        await EnsureIdentityUserAsync(teacherId);
         return await _teacherRepo.AddAsync(new Teacher { TeacherId = teacherId });
     }
 
@@ -78,11 +84,25 @@ public class ExamGradingService : IGradingService
         if (student is not null)
             return student;
 
+        await EnsureIdentityUserAsync(studentId);
         return await _studentRepo.AddAsync(new Student
         {
             StudentId = studentId,
             TeacherId = teacherFk
         });
+    }
+
+    /// <summary>
+    /// Creates an Identity user for the given ID if one does not already exist.
+    /// The initial password equals the ID — spoofed auth for demo purposes.
+    /// </summary>
+    private async Task EnsureIdentityUserAsync(string id)
+    {
+        if (await _userManager.FindByNameAsync(id) is not null)
+            return;
+
+        AppUser user = new() { UserName = id };
+        await _userManager.CreateAsync(user, id);
     }
 
     private async Task<ExamGradeResult> GradeExamAsync(

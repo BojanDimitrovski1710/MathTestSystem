@@ -25,6 +25,10 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=MathTestDb;User Id=sa;Password=MathTest_Sa!2024;TrustServerCertificate=True;
+      - Jwt__Secret=MathTestSystem_SuperSecretKey_2024_DoNotUseInProduction!
+      - Jwt__Issuer=MathTestSystem
+      - Jwt__Audience=MathTestSystem
+      - Jwt__ExpiryMinutes=60
     depends_on:
       sqlserver:
         condition: service_healthy
@@ -38,9 +42,36 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=MathTestDb;User Id=sa;Password=MathTest_Sa!2024;TrustServerCertificate=True;
+      - Jwt__Secret=MathTestSystem_SuperSecretKey_2024_DoNotUseInProduction!
+      - Jwt__Issuer=MathTestSystem
+      - Jwt__Audience=MathTestSystem
+      - Jwt__ExpiryMinutes=60
     depends_on:
       sqlserver:
         condition: service_healthy
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: MathTestSystem.ApiGateway/Dockerfile
+    ports:
+      - "5000:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=MathTestDb;User Id=sa;Password=MathTest_Sa!2024;TrustServerCertificate=True;
+      - Jwt__Secret=MathTestSystem_SuperSecretKey_2024_DoNotUseInProduction!
+      - Jwt__Issuer=MathTestSystem
+      - Jwt__Audience=MathTestSystem
+      - Jwt__ExpiryMinutes=60
+      - ReverseProxy__Clusters__grading-cluster__Destinations__grading-service__Address=http://grading-service:8080/
+      - ReverseProxy__Clusters__student-cluster__Destinations__student-service__Address=http://student-service:8080/
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      grading-service:
+        condition: service_started
+      student-service:
+        condition: service_started
 
 volumes:
   sqlserver_data:

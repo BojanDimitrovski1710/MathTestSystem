@@ -3,7 +3,9 @@ using MathTestSystem.Domain.Interfaces;
 using MathTestSystem.GradingService.Models;
 using MathTestSystem.GradingService.Parsing;
 using MathTestSystem.GradingService.Services;
+using MathTestSystem.Infrastructure.Data;
 using MathTestSystem.MathProcessor.Services;
+using Microsoft.AspNetCore.Identity;
 using NSubstitute;
 
 namespace MathTestSystem.GradingService.Tests;
@@ -20,7 +22,14 @@ public class ExamGradingServiceTests
         ExamXmlParser parser = new();
         ExpressionEvaluator evaluator = new();
 
-        _service = new ExamGradingService(parser, evaluator, _teacherRepo, _studentRepo, _examRepo);
+        UserManager<AppUser> userManager = Substitute.For<UserManager<AppUser>>(
+            Substitute.For<IUserStore<AppUser>>(),
+            null, null, null, null, null, null, null, null);
+
+        userManager.FindByNameAsync(Arg.Any<string>()).Returns((AppUser?)null);
+        userManager.CreateAsync(Arg.Any<AppUser>(), Arg.Any<string>()).Returns(IdentityResult.Success);
+
+        _service = new ExamGradingService(parser, evaluator, _teacherRepo, _studentRepo, _examRepo, userManager);
 
         _teacherRepo.GetByTeacherIdAsync(Arg.Any<string>()).Returns((Teacher?)null);
         _studentRepo.GetByStudentIdAsync(Arg.Any<string>()).Returns((Student?)null);

@@ -16,7 +16,9 @@ public static class ExamEndpoints
             .WithSummary("Grade a teacher-uploaded XML exam submission.")
             .Accepts<string>("application/xml", "text/xml", "text/plain")
             .Produces<GradeExamResponse>()
-            .ProducesProblem(StatusCodes.Status400BadRequest);
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .RequireAuthorization();
     }
 
     private static async Task<IResult> GradeExams(

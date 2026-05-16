@@ -11,10 +11,10 @@ string connectionString = builder.Configuration.GetConnectionString("DefaultConn
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' is not configured.");
 
 builder.Services.AddInfrastructure(connectionString);
+builder.Services.AddJwtAuthentication(builder.Configuration);
 
 WebApplication app = builder.Build();
 
-// Apply pending migrations on startup so the database is always up to date
 using (IServiceScope scope = app.Services.CreateScope())
 {
     AppDbContext db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -25,6 +25,9 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 
 app.UseHttpsRedirection();
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapStudentEndpoints();
+app.MapTeacherEndpoints();
 
 app.Run();
