@@ -9,7 +9,7 @@ public class ExamTask
     /// </summary>
     public string TaskId { get; set; } = string.Empty;
 
-    public int ExamId { get; set; }
+    public Guid ExamUid { get; set; }
     public Exam Exam { get; set; } = null!;
 
     /// <summary>
@@ -29,11 +29,11 @@ public class ExamTask
 
     public bool IsCorrect { get; set; }
 
+    public string? ErrorMessage { get; set; }
+
     /// <summary>
     /// True if the expression was malformed and could not be evaluated.
-    /// Processing continues for other tasks in the exam.
+    /// Derived from <see cref="ErrorMessage"/> — no separate column needed.
     /// </summary>
-    public bool HasError { get; set; }
-
-    public string? ErrorMessage { get; set; }
+    public bool HasError => ErrorMessage is not null;
 }

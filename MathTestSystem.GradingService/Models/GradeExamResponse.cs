@@ -22,5 +22,7 @@ public record TaskGradeResult(
     decimal StudentAnswer,
     decimal? CorrectAnswer,
     bool IsCorrect,
-    bool HasError,
-    string? ErrorCode);
+    string? ErrorCode)
+{
+    public bool HasError => ErrorCode is not null;
+}
