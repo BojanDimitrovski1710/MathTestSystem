@@ -14,7 +14,7 @@ public static class ExamEndpoints
         group.MapPost("/grade", GradeExams)
             .WithName("GradeExams")
             .WithSummary("Grade a teacher-uploaded XML exam submission.")
-            .Accepts<string>("application/xml")
+            .Accepts<string>("application/xml", "text/xml", "text/plain")
             .Produces<GradeExamResponse>()
             .ProducesProblem(StatusCodes.Status400BadRequest);
     }
