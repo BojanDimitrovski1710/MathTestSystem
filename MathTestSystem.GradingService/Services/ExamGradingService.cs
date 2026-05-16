@@ -37,6 +37,8 @@ public class ExamGradingService : IGradingService
 
         List<StudentGradeResult> studentResults = [];
 
+        Dictionary<string, EvaluationResult> expressionCache = [];
+
         foreach (ParsedStudent parsedStudent in parsed.Students)
         {
             Student student = await GetOrCreateStudentAsync(parsedStudent.StudentId, teacher.Id);
@@ -45,7 +47,7 @@ public class ExamGradingService : IGradingService
 
             foreach (ParsedExam parsedExam in parsedStudent.Exams)
             {
-                ExamGradeResult examResult = await GradeExamAsync(parsedExam, student.Id);
+                ExamGradeResult examResult = await GradeExamAsync(parsedExam, student.Id, expressionCache);
                 examResults.Add(examResult);
             }
 
@@ -83,14 +85,21 @@ public class ExamGradingService : IGradingService
         });
     }
 
-    private async Task<ExamGradeResult> GradeExamAsync(ParsedExam parsedExam, int studentFk)
+    private async Task<ExamGradeResult> GradeExamAsync(
+        ParsedExam parsedExam,
+        int studentFk,
+        Dictionary<string, EvaluationResult> expressionCache)
     {
         List<ExamTask> tasks = [];
         List<TaskGradeResult> taskResults = [];
 
         foreach (ParsedTask parsedTask in parsedExam.Tasks)
         {
-            EvaluationResult evalResult = _evaluator.Evaluate(parsedTask.Expression);
+            if (!expressionCache.TryGetValue(parsedTask.Expression, out EvaluationResult evalResult))
+            {
+                evalResult = _evaluator.Evaluate(parsedTask.Expression);
+                expressionCache[parsedTask.Expression] = evalResult;
+            }
 
             ExamTask task = new()
             {
