@@ -96,7 +96,8 @@ public class AppDbContext : DbContext
 
             entity.HasMany(e => e.Tasks)
                 .WithOne(t => t.Exam)
-                .HasForeignKey(t => t.ExamId)
+                .HasForeignKey(t => t.ExamUid)
+                .HasPrincipalKey(e => e.Uid)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
@@ -123,6 +124,8 @@ public class AppDbContext : DbContext
 
             entity.Property(t => t.ErrorMessage)
                 .HasMaxLength(500);
+
+            entity.Ignore(t => t.HasError);
         });
     }
 }

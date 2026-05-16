@@ -108,7 +108,6 @@ public class ExamGradingService : IGradingService
                 StudentAnswer = parsedTask.StudentAnswer,
                 CorrectAnswer = evalResult.Success ? evalResult.Value : null,
                 IsCorrect = evalResult.Success && evalResult.Value == parsedTask.StudentAnswer,
-                HasError = !evalResult.Success,
                 ErrorMessage = evalResult.Success ? null : evalResult.ErrorCode
             };
 
@@ -119,12 +118,11 @@ public class ExamGradingService : IGradingService
                 task.StudentAnswer,
                 task.CorrectAnswer,
                 task.IsCorrect,
-                task.HasError,
                 task.ErrorMessage));
         }
 
         int correctCount = tasks.Count(t => t.IsCorrect);
-        int gradableCount = tasks.Count(t => !t.HasError);
+        int gradableCount = tasks.Count(t => t.ErrorMessage is null);
         decimal score = gradableCount > 0
             ? Math.Round((decimal)correctCount / gradableCount * 100, 2)
             : 0m;
