@@ -21,6 +21,12 @@ public class TeacherRepository : ITeacherRepository
             .FirstOrDefaultAsync(t => t.Uid == uid);
     }
 
+    public async Task<Teacher?> GetByTeacherIdAsync(string teacherId)
+    {
+        return await _context.Teachers
+            .FirstOrDefaultAsync(t => t.TeacherId == teacherId);
+    }
+
     public async Task<IEnumerable<Teacher>> GetAllAsync()
     {
         return await _context.Teachers

@@ -21,6 +21,12 @@ public class StudentRepository : IStudentRepository
             .FirstOrDefaultAsync(s => s.Uid == uid);
     }
 
+    public async Task<Student?> GetByStudentIdAsync(string studentId)
+    {
+        return await _context.Students
+            .FirstOrDefaultAsync(s => s.StudentId == studentId);
+    }
+
     public async Task<IEnumerable<Student>> GetByTeacherUidAsync(Guid teacherUid)
     {
         return await _context.Students
