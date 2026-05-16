@@ -14,7 +14,6 @@ builder.Services.AddInfrastructure(connectionString);
 
 WebApplication app = builder.Build();
 
-// Apply pending migrations on startup so the database is always up to date
 using (IServiceScope scope = app.Services.CreateScope())
 {
     AppDbContext db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -26,5 +25,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.MapStudentEndpoints();
+app.MapTeacherEndpoints();
 
 app.Run();

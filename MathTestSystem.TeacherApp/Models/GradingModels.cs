@@ -23,3 +23,20 @@ public record TaskGradeResult(
     bool IsCorrect,
     bool HasError,
     string? ErrorCode);
+
+public record TeacherStudentsResponse(
+    string TeacherId,
+    IReadOnlyList<StudentOverviewModel> Students);
+
+public record StudentOverviewModel(
+    Guid StudentUid,
+    string StudentId,
+    IReadOnlyList<ExamSummaryModel> Exams);
+
+public record ExamSummaryModel(
+    Guid ExamUid,
+    string ExamId,
+    DateTime SubmittedAt,
+    decimal Score,
+    int TotalTasks,
+    int CorrectTasks);
