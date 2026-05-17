@@ -17,6 +17,8 @@ public static class ResultCodes
 
     #region Xml
 
+    public const string XmlSchemaNotFound = "XML_SCHEMA_NOT_FOUND";
+    public const string XmlSchemaValidationFailed = "XML_SCHEMA_VALIDATION_FAILED";
     public const string XmlRootMissing = "XML_ROOT_MISSING";
     public const string XmlTeacherIdMissing = "XML_TEACHER_ID_MISSING";
     public const string XmlStudentsMissing = "XML_STUDENTS_MISSING";
