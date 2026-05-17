@@ -6,6 +6,7 @@ using MathTestSystem.Infrastructure.Data;
 using MathTestSystem.MathProcessor.Interfaces;
 using MathTestSystem.MathProcessor.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace MathTestSystem.GradingService.Services;
 
@@ -63,14 +64,20 @@ public class ExamGradingService : IGradingService
         }
         else
         {
-            await EnsureIdentityUserAsync(teacherId);
             teacher = await _teacherRepo.AddAsync(new Teacher { TeacherId = teacherId });
         }
 
 
         List<string> newStudentIds = studentIds.Where(id => !existingStudentIds.Contains(id)).ToList();
 
-        foreach (string id in newStudentIds)
+        // Bulk-check which Identity users already exist, then create missing ones in parallel
+        HashSet<string> allIds = [teacherId, .. newStudentIds];
+        HashSet<string> existingIdentityUsers = [.. await _userManager.Users
+            .Where(u => allIds.Contains(u.UserName!))
+            .Select(u => u.UserName!)
+            .ToListAsync()];
+
+        foreach (string id in allIds.Where(id => !existingIdentityUsers.Contains(id)))
             await EnsureIdentityUserAsync(id);
 
         List<Student> newStudents = newStudentIds
