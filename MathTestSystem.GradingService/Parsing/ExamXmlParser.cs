@@ -47,10 +47,13 @@ public class ExamXmlParser : IExamXmlParser
 
     private static XmlSchemaSet LoadSchema()
     {
-        const string resourceName = "MathTestSystem.GradingService.Schemas.TeacherExam.xsd";
+        Assembly assembly = Assembly.GetExecutingAssembly();
 
-        using Stream stream = Assembly.GetExecutingAssembly()
-            .GetManifestResourceStream(resourceName)
+        string resourceName = assembly
+            .GetManifestResourceNames()
+            .Single(n => n.EndsWith("TeacherExam.xsd"));
+
+        using Stream stream = assembly.GetManifestResourceStream(resourceName)
             ?? throw new InvalidOperationException(ResultCodes.XmlSchemaNotFound);
 
         XmlSchemaSet set = new();
