@@ -1,5 +1,6 @@
+using System.Globalization;
 using System.Reflection;
-using System.Xml.Linq;
+using System.Xml;
 using System.Xml.Schema;
 using MathTestSystem.Domain.Constants;
 
@@ -11,39 +12,43 @@ public class ExamXmlParser : IExamXmlParser
 
     public ParsedTeacherExam Parse(string xml)
     {
-        XElement root = Validate(XDocument.Parse(xml));
-
-        string teacherId = root.Attribute("ID")?.Value
-            ?? throw new InvalidOperationException(ResultCodes.XmlTeacherIdMissing);
-
-        XElement studentsElement = root.Element("Students")
-            ?? throw new InvalidOperationException(ResultCodes.XmlStudentsMissing);
-
-        IReadOnlyList<ParsedStudent> students = studentsElement
-            .Elements("Student")
-            .Select(ParseStudent)
-            .ToList();
-
-        return new ParsedTeacherExam(teacherId, students);
+        TeacherXml teacherXml = XmlProcessor.DeserializeWithValidation<TeacherXml>(xml, SchemaSet);
+        return MapTeacher(teacherXml);
     }
 
     // -------------------------------------------------------------------------
-    // Schema validation
+    // Mapping — TeacherXml → domain parsed result
     // -------------------------------------------------------------------------
 
-    private static XElement Validate(XDocument doc)
+    private static ParsedTeacherExam MapTeacher(TeacherXml teacherXml) =>
+        new(teacherXml.ID, teacherXml.Students.Select(MapStudent).ToList());
+
+    private static ParsedStudent MapStudent(StudentXml student) =>
+        new(student.ID, student.Exams.Select(MapExam).ToList());
+
+    private static ParsedExam MapExam(ExamXml exam) =>
+        new(exam.Id, exam.Tasks.Select(MapTask).ToList());
+
+    private static ParsedTask MapTask(TaskXml task)
     {
-        List<string> errors = [];
+        string content = task.Content.Trim();
+        int equalsIndex = content.LastIndexOf('=');
 
-        doc.Validate(SchemaSet, (_, e) => errors.Add(e.Message));
+        if (equalsIndex < 0)
+            throw new InvalidOperationException(ResultCodes.XmlTaskMissingEqualsSeparator);
 
-        if (errors.Count > 0)
-            throw new InvalidOperationException(
-                $"{ResultCodes.XmlSchemaValidationFailed}: {string.Join("; ", errors)}");
+        string expression = content[..equalsIndex].Trim();
+        string answerStr = content[(equalsIndex + 1)..].Trim();
 
-        return doc.Root
-            ?? throw new InvalidOperationException(ResultCodes.XmlRootMissing);
+        if (!decimal.TryParse(answerStr, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal studentAnswer))
+            throw new InvalidOperationException(ResultCodes.XmlTaskInvalidStudentAnswer);
+
+        return new ParsedTask(task.Id, expression, studentAnswer);
     }
+
+    // -------------------------------------------------------------------------
+    // Schema — loaded once from embedded resource
+    // -------------------------------------------------------------------------
 
     private static XmlSchemaSet LoadSchema()
     {
@@ -57,50 +62,7 @@ public class ExamXmlParser : IExamXmlParser
             ?? throw new InvalidOperationException(ResultCodes.XmlSchemaNotFound);
 
         XmlSchemaSet set = new();
-        set.Add(null, System.Xml.XmlReader.Create(stream));
+        set.Add(null, XmlReader.Create(stream));
         return set;
-    }
-
-    // -------------------------------------------------------------------------
-    // Parsing
-    // -------------------------------------------------------------------------
-
-    private static ParsedStudent ParseStudent(XElement student) =>
-        new(
-            StudentId: student.Attribute("ID")?.Value
-                ?? throw new InvalidOperationException(ResultCodes.XmlStudentIdMissing),
-            Exams: student
-                .Elements("Exam")
-                .Select(ParseExam)
-                .ToList());
-
-    private static ParsedExam ParseExam(XElement exam) =>
-        new(
-            ExamId: exam.Attribute("Id")?.Value
-                ?? throw new InvalidOperationException(ResultCodes.XmlExamIdMissing),
-            Tasks: exam
-                .Elements("Task")
-                .Select(ParseTask)
-                .ToList());
-
-    private static ParsedTask ParseTask(XElement task)
-    {
-        string taskId = task.Attribute("id")?.Value
-            ?? throw new InvalidOperationException(ResultCodes.XmlTaskIdMissing);
-
-        string content = task.Value.Trim();
-        int equalsIndex = content.LastIndexOf('=');
-
-        if (equalsIndex < 0)
-            throw new InvalidOperationException(ResultCodes.XmlTaskMissingEqualsSeparator);
-
-        string expression = content[..equalsIndex].Trim();
-        string answerStr = content[(equalsIndex + 1)..].Trim();
-
-        if (!decimal.TryParse(answerStr, System.Globalization.NumberStyles.Any,
-                System.Globalization.CultureInfo.InvariantCulture, out decimal studentAnswer))
-            throw new InvalidOperationException(ResultCodes.XmlTaskInvalidStudentAnswer);
-
-        return new ParsedTask(taskId, expression, studentAnswer);
     }
 }
