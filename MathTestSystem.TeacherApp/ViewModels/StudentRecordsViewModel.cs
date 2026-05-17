@@ -62,15 +62,15 @@ public class StudentRecordsViewModel : INotifyPropertyChanged
 
         try
         {
-            TeacherStudentsResponse response = await _studentService.GetTeacherStudentsAsync(TeacherId.Trim());
+            List<StudentSummaryResponse> students = await _studentService.GetTeacherStudentsAsync(TeacherId.Trim());
 
-            foreach (StudentOverviewModel student in response.Students)
+            foreach (StudentSummaryResponse student in students)
                 Students.Add(new StudentOverviewViewModel(student));
 
             HasLoaded = true;
             StatusMessage = Students.Count > 0
-                ? $"Loaded {Students.Count} student(s) for teacher '{response.TeacherId}'."
-                : $"No students found for teacher '{response.TeacherId}'.";
+                ? $"Loaded {Students.Count} student(s) for teacher '{TeacherId.Trim()}'."
+                : $"No students found for teacher '{TeacherId.Trim()}'.";
         }
         catch (Exception ex)
         {
@@ -87,7 +87,7 @@ public class StudentRecordsViewModel : INotifyPropertyChanged
         => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 }
 
-public class StudentOverviewViewModel(StudentOverviewModel model)
+public class StudentOverviewViewModel(StudentSummaryResponse model)
 {
     public string StudentId => model.StudentId;
     public Guid StudentUid => model.StudentUid;
@@ -95,5 +95,5 @@ public class StudentOverviewViewModel(StudentOverviewModel model)
     public decimal AverageScore => model.Exams.Count > 0
         ? Math.Round(model.Exams.Average(e => e.Score), 1)
         : 0m;
-    public IReadOnlyList<ExamSummaryModel> Exams => model.Exams;
+    public IReadOnlyList<ExamSummaryResponse> Exams => model.Exams;
 }

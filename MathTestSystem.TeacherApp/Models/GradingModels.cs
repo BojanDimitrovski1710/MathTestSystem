@@ -24,16 +24,12 @@ public record TaskGradeResult(
     bool HasError,
     string? ErrorCode);
 
-public record TeacherStudentsResponse(
-    string TeacherId,
-    IReadOnlyList<StudentOverviewModel> Students);
-
-public record StudentOverviewModel(
+public record StudentSummaryResponse(
     Guid StudentUid,
     string StudentId,
-    IReadOnlyList<ExamSummaryModel> Exams);
+    IReadOnlyList<ExamSummaryResponse> Exams);
 
-public record ExamSummaryModel(
+public record ExamSummaryResponse(
     Guid ExamUid,
     string ExamId,
     DateTime SubmittedAt,

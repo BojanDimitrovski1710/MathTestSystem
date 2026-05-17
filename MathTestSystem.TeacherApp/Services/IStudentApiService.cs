@@ -4,5 +4,5 @@ namespace MathTestSystem.TeacherApp.Services;
 
 public interface IStudentApiService
 {
-    Task<TeacherStudentsResponse> GetTeacherStudentsAsync(string teacherId);
+    Task<List<StudentSummaryResponse>> GetTeacherStudentsAsync(string teacherId);
 }
