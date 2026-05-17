@@ -95,7 +95,7 @@ public class TeacherEntryViewModel(TeacherDashboardEntry teacher)
     public int CorrectTasks => teacher.CorrectTasks;
     public int TotalTasks => teacher.TotalTasks;
     public decimal Score => teacher.Score;
-    public string ScoreSummary => $"{CorrectTasks}/{TotalTasks} ({Score:F1}%)";
+    public string ScoreSummary => $"{CorrectTasks}/{TotalTasks} ({Score:F2}%)";
     public IReadOnlyList<ExamEntryViewModel> Exams { get; } =
         teacher.Exams.Select(e => new ExamEntryViewModel(e)).ToList();
 }
@@ -107,6 +107,6 @@ public class ExamEntryViewModel(ExamDashboardEntry exam)
     public decimal Score => exam.Score;
     public int CorrectTasks => exam.CorrectTasks;
     public int TotalTasks => exam.TotalTasks;
-    public string ScoreSummary => $"{CorrectTasks}/{TotalTasks} ({Score:F1}%)";
+    public string ScoreSummary => $"{CorrectTasks}/{TotalTasks} ({Score:F2}%)";
     public IReadOnlyList<TaskEntry> Tasks => exam.Tasks;
 }

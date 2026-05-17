@@ -76,7 +76,7 @@
                                             DisplayMemberBinding="{Binding ExamCount}"/>
                             <GridViewColumn Header="Average Score" Width="130"
                                             DisplayMemberBinding="{Binding AverageScore,
-                                                StringFormat={}{0:F1}%}"/>
+                                                StringFormat={}{0:F2}%}"/>
                         </GridView>
                     </ListView.View>
                 </ListView>

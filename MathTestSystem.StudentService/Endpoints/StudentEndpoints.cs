@@ -53,7 +53,7 @@ public static class StudentEndpoints
         int overallCorrect = examList.Sum(e => e.Tasks.Count(t => t.IsCorrect));
         int overallTotal = examList.Sum(e => e.Tasks.Count);
         decimal overallScore = overallTotal > 0
-            ? Math.Round((decimal)overallCorrect / overallTotal * 100, 1)
+            ? Math.Round((decimal)overallCorrect / overallTotal * 100, 2)
             : 0m;
 
         // In the current domain a student belongs to one teacher.
@@ -68,7 +68,7 @@ public static class StudentEndpoints
                 int correct = e.Tasks.Count(t => t.IsCorrect);
                 int total = e.Tasks.Count;
                 decimal score = total > 0
-                    ? Math.Round((decimal)correct / total * 100, 1)
+                    ? Math.Round((decimal)correct / total * 100, 2)
                     : 0m;
 
                 return new ExamDashboardEntry(
