@@ -1,10 +1,10 @@
 using MathTestSystem.Infrastructure.Data;
 using MathTestSystem.Infrastructure.Extensions;
-using MathTestSystem.StudentService.Endpoints;
 using Microsoft.EntityFrameworkCore;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 string connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
@@ -27,7 +27,6 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapStudentEndpoints();
-app.MapTeacherEndpoints();
+app.MapControllers();
 
 app.Run();
