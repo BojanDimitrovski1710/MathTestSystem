@@ -14,7 +14,8 @@ namespace MathTestSystem.StudentService.Controllers;
 public class TeacherController(
     ITeacherRepository teacherRepo,
     IStudentRepository studentRepo,
-    IExamRepository examRepo) : ControllerBase
+    IExamRepository examRepo,
+    ILogger<TeacherController> logger) : ControllerBase
 {
     [HttpGet("{teacherId}/students")]
     [ProducesResponseType<IReadOnlyList<StudentSummaryResponse>>(StatusCodes.Status200OK)]
@@ -22,10 +23,15 @@ public class TeacherController(
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetStudents(string teacherId)
     {
+        logger.LogInformation("Student list requested for teacher {TeacherId}", teacherId);
+
         Teacher? teacher = await teacherRepo.GetByTeacherIdAsync(teacherId);
 
         if (teacher is null)
+        {
+            logger.LogWarning("Student list request failed — teacher {TeacherId} not found", teacherId);
             return NotFound(ResultCodes.TeacherNotFound);
+        }
 
         IEnumerable<Student> students = await studentRepo.GetByTeacherUidAsync(teacher.Uid);
 
@@ -47,6 +53,10 @@ public class TeacherController(
 
             response.Add(new StudentSummaryResponse(student.Uid, student.StudentId, examSummaries));
         }
+
+        logger.LogInformation(
+            "Returned {StudentCount} students for teacher {TeacherId}",
+            response.Count, teacherId);
 
         return Ok(response);
     }
