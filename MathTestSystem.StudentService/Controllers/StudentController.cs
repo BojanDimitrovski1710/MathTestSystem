@@ -13,7 +13,8 @@ namespace MathTestSystem.StudentService.Controllers;
 [Tags("Students")]
 public class StudentController(
     IStudentRepository studentRepo,
-    IExamRepository examRepo) : ControllerBase
+    IExamRepository examRepo,
+    ILogger<StudentController> logger) : ControllerBase
 {
     [HttpGet("{studentId}/dashboard")]
     [ProducesResponseType<StudentDashboardResponse>(StatusCodes.Status200OK)]
@@ -21,10 +22,15 @@ public class StudentController(
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetDashboard(string studentId)
     {
+        logger.LogInformation("Dashboard requested for student {StudentId}", studentId);
+
         Student? student = await studentRepo.GetByStudentIdAsync(studentId);
 
         if (student is null)
+        {
+            logger.LogWarning("Dashboard request failed — student {StudentId} not found", studentId);
             return NotFound(ResultCodes.StudentNotFound);
+        }
 
         IEnumerable<Exam> exams = await examRepo.GetByStudentUidAsync(student.Uid);
         List<Exam> examList = exams.ToList();
@@ -38,7 +44,7 @@ public class StudentController(
         // In the current domain a student belongs to one teacher.
         // The grouping structure supports multiple teachers if that changes.
         TeacherDashboardEntry teacherEntry = new(
-            student.Teacher.TeacherId,
+            student.Teacher!.TeacherId,
             overallCorrect,
             overallTotal,
             overallScore,
@@ -84,10 +90,15 @@ public class StudentController(
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetExams(Guid studentUid)
     {
+        logger.LogInformation("Exam list requested for student {StudentUid}", studentUid);
+
         Student? student = await studentRepo.GetByUidAsync(studentUid);
 
         if (student is null)
+        {
+            logger.LogWarning("Exam list request failed — student {StudentUid} not found", studentUid);
             return NotFound(ResultCodes.StudentNotFound);
+        }
 
         IEnumerable<Exam> exams = await examRepo.GetByStudentUidAsync(student.Uid);
 
@@ -110,15 +121,23 @@ public class StudentController(
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetExamDetail(Guid studentUid, Guid examUid)
     {
+        logger.LogInformation("Exam detail requested for student {StudentUid}, exam {ExamUid}", studentUid, examUid);
+
         Student? student = await studentRepo.GetByUidAsync(studentUid);
 
         if (student is null)
+        {
+            logger.LogWarning("Exam detail request failed — student {StudentUid} not found", studentUid);
             return NotFound(ResultCodes.StudentNotFound);
+        }
 
         Exam? exam = await examRepo.GetWithTasksAsync(examUid);
 
-        if (exam is null || exam.Student.Uid != student.Uid)
+        if (exam is null || exam.Student!.Uid != student.Uid)
+        {
+            logger.LogWarning("Exam detail request failed — exam {ExamUid} not found for student {StudentUid}", examUid, studentUid);
             return NotFound(ResultCodes.ExamNotFound);
+        }
 
         ExamDetailResponse response = new(
             exam.Uid,

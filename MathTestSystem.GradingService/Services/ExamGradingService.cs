@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using MathTestSystem.Domain.Entities;
 using MathTestSystem.Domain.Interfaces;
 using MathTestSystem.GradingService.Models;
@@ -6,6 +7,7 @@ using MathTestSystem.Infrastructure.Data;
 using MathTestSystem.MathProcessor.Interfaces;
 using MathTestSystem.MathProcessor.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 
 namespace MathTestSystem.GradingService.Services;
 
@@ -17,6 +19,7 @@ public class ExamGradingService : IGradingService
     private readonly IStudentRepository _studentRepo;
     private readonly IExamRepository _examRepo;
     private readonly UserManager<AppUser> _userManager;
+    private readonly ILogger<ExamGradingService> _logger;
 
     public ExamGradingService(
         IExamXmlParser parser,
@@ -24,7 +27,8 @@ public class ExamGradingService : IGradingService
         ITeacherRepository teacherRepo,
         IStudentRepository studentRepo,
         IExamRepository examRepo,
-        UserManager<AppUser> userManager)
+        UserManager<AppUser> userManager,
+        ILogger<ExamGradingService> logger)
     {
         _parser = parser;
         _evaluator = evaluator;
@@ -32,19 +36,31 @@ public class ExamGradingService : IGradingService
         _studentRepo = studentRepo;
         _examRepo = examRepo;
         _userManager = userManager;
+        _logger = logger;
     }
 
     public async Task<GradeExamResponse> GradeAsync(string xml)
     {
+        _logger.LogInformation("Grading request received — parsing XML");
+        Stopwatch sw = Stopwatch.StartNew();
+
         ParsedTeacherExam parsed = _parser.Parse(xml);
 
         string teacherId = parsed.TeacherId;
         List<string> studentIds = parsed.Students.Select(s => s.StudentId).Distinct().ToList();
+        int totalExams = parsed.Students.Sum(s => s.Exams.Count);
+        int totalTasks = parsed.Students.SelectMany(s => s.Exams).Sum(e => e.Tasks.Count);
 
+        _logger.LogInformation(
+            "Parsed XML for teacher {TeacherId}: {StudentCount} students, {ExamCount} exams, {TaskCount} tasks",
+            teacherId, studentIds.Count, totalExams, totalTasks);
 
         HashSet<string> existingTeacherIds = await _teacherRepo.GetExistingIdsAsync([teacherId]);
         HashSet<string> existingStudentIds = await _studentRepo.GetExistingIdsAsync(studentIds);
 
+        int uniqueExpressions = parsed.Students
+            .SelectMany(s => s.Exams).SelectMany(e => e.Tasks)
+            .Select(t => t.Expression).Distinct().Count();
 
         Dictionary<string, EvaluationResult> expressionCache = parsed.Students
             .SelectMany(s => s.Exams)
@@ -55,19 +71,29 @@ public class ExamGradingService : IGradingService
             .Select(expr => (Expression: expr, Result: _evaluator.Evaluate(expr)))
             .ToDictionary(x => x.Expression, x => x.Result);
 
+        _logger.LogInformation(
+            "Evaluated {UniqueCount} unique expressions (cache covers {TaskCount} total tasks)",
+            uniqueExpressions, totalTasks);
+
         Teacher teacher;
 
         if (existingTeacherIds.Contains(teacherId))
         {
             teacher = (await _teacherRepo.GetByTeacherIdAsync(teacherId))!;
+            _logger.LogDebug("Teacher {TeacherId} already exists", teacherId);
         }
         else
         {
+            _logger.LogInformation("Creating new teacher {TeacherId}", teacherId);
             teacher = await _teacherRepo.AddAsync(new Teacher(teacherId));
         }
 
-
         List<string> newStudentIds = studentIds.Where(id => !existingStudentIds.Contains(id)).ToList();
+
+        if (newStudentIds.Count > 0)
+            _logger.LogInformation(
+                "{NewCount} new students out of {TotalCount} — creating identity users and records",
+                newStudentIds.Count, studentIds.Count);
 
         // Bulk-check which Identity users already exist, then create missing ones sequentially
         HashSet<string> allIds = [teacherId, .. newStudentIds];
@@ -110,9 +136,12 @@ public class ExamGradingService : IGradingService
             }
         }
 
-
         await _examRepo.AddRangeAsync(examMappings.Select(x => x.Exam));
 
+        sw.Stop();
+        _logger.LogInformation(
+            "Grading complete for teacher {TeacherId} — {ExamCount} exams saved in {ElapsedMs}ms",
+            teacherId, examMappings.Count, sw.ElapsedMilliseconds);
 
         List<StudentGradeResult> studentResults = parsed.Students
             .Select(parsedStudent =>
@@ -144,8 +173,11 @@ public class ExamGradingService : IGradingService
         IdentityResult result = await _userManager.CreateAsync(user, id);
 
         if (!result.Succeeded && result.Errors.Any(e => e.Code != "DuplicateUserName"))
-            throw new InvalidOperationException(
-                $"Failed to create Identity user for '{id}': {string.Join(", ", result.Errors.Select(e => e.Description))}");
+        {
+            string errors = string.Join(", ", result.Errors.Select(e => e.Description));
+            _logger.LogError("Failed to create Identity user for '{UserId}': {Errors}", id, errors);
+            throw new InvalidOperationException($"Failed to create Identity user for '{id}': {errors}");
+        }
     }
 
     private static (Exam Exam, IReadOnlyList<TaskGradeResult> TaskResults) BuildExam(

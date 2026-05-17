@@ -10,7 +10,7 @@ namespace MathTestSystem.GradingService.Controllers;
 [Route("api/exams")]
 [Authorize]
 [Tags("Exams")]
-public class ExamController(IGradingService gradingService) : ControllerBase
+public class ExamController(IGradingService gradingService, ILogger<ExamController> logger) : ControllerBase
 {
     [HttpPost("grade")]
     [DisableRequestSizeLimit]
@@ -24,7 +24,12 @@ public class ExamController(IGradingService gradingService) : ControllerBase
         string xml = await reader.ReadToEndAsync();
 
         if (string.IsNullOrWhiteSpace(xml))
+        {
+            logger.LogWarning("Grade request rejected — empty request body");
             return BadRequest(ResultCodes.RequestBodyEmpty);
+        }
+
+        logger.LogInformation("Grade request received — {Bytes} bytes", xml.Length);
 
         try
         {
@@ -33,6 +38,7 @@ public class ExamController(IGradingService gradingService) : ControllerBase
         }
         catch (InvalidOperationException ex)
         {
+            logger.LogError(ex, "Grading failed: {Message}", ex.Message);
             return BadRequest(ex.Message);
         }
     }
