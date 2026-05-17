@@ -5,6 +5,7 @@ using System.Windows.Input;
 using MathTestSystem.TeacherApp.Commands;
 using MathTestSystem.TeacherApp.Models;
 using MathTestSystem.TeacherApp.Services;
+using MathTestSystem.TeacherApp.State;
 
 namespace MathTestSystem.TeacherApp.ViewModels;
 
@@ -12,14 +13,29 @@ public class StudentRecordsViewModel : INotifyPropertyChanged
 {
     private readonly IStudentApiService _studentService;
     private string _teacherId = string.Empty;
-    private string _statusMessage = "Enter a Teacher ID and press Load.";
+    private string _statusMessage = string.Empty;
     private bool _isLoading;
     private bool _hasLoaded;
 
-    public StudentRecordsViewModel(IStudentApiService studentService)
+    public bool IsAdminMode { get; }
+
+    public StudentRecordsViewModel(IStudentApiService studentService, AuthState authState)
     {
         _studentService = studentService;
+        IsAdminMode = authState.IsAdmin;
         LoadCommand = new RelayCommand(async () => await LoadAsync(), CanLoad);
+
+        if (!IsAdminMode)
+        {
+            // Pre-fill with the logged-in teacher's ID and auto-load
+            _teacherId = authState.Username ?? string.Empty;
+            _statusMessage = "Loading your students…";
+            _ = LoadAsync();
+        }
+        else
+        {
+            _statusMessage = "Enter a Teacher ID and press Load.";
+        }
     }
 
     public ICommand LoadCommand { get; }

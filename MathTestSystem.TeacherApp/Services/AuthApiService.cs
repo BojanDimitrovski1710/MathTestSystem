@@ -8,7 +8,7 @@ public class AuthApiService : IAuthApiService
     private readonly HttpClient _http = new();
     private const string LoginEndpoint = "http://localhost:5000/api/auth/login";
 
-    public async Task<string> LoginAsync(string username, string password)
+    public async Task<(string Token, string Role)> LoginAsync(string username, string password)
     {
         HttpResponseMessage response = await _http.PostAsJsonAsync(LoginEndpoint, new { username, password });
 
@@ -21,8 +21,11 @@ public class AuthApiService : IAuthApiService
         TokenResponse? result = await response.Content.ReadFromJsonAsync<TokenResponse>(
             new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-        return result?.Token ?? throw new InvalidOperationException("Gateway returned an empty token.");
+        if (result is null)
+            throw new InvalidOperationException("Gateway returned an empty token.");
+
+        return (result.Token, result.Role);
     }
 
-    private record TokenResponse(string Token);
+    private record TokenResponse(string Token, string Username, string Role);
 }

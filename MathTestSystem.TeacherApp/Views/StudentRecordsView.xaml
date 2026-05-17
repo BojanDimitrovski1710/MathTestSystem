@@ -16,8 +16,9 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <!-- Teacher ID input -->
-            <GroupBox Grid.Row="0" Header="Teacher ID" Margin="0,0,0,12" Padding="8">
+            <!-- Teacher ID input (admin only) -->
+            <GroupBox Grid.Row="0" Header="Teacher ID" Margin="0,0,0,12" Padding="8"
+                      Visibility="{Binding IsAdminMode, Converter={StaticResource BoolToVis}}">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>

@@ -54,7 +54,7 @@ public class AppViewModel : INotifyPropertyChanged
         CurrentView = new GradeViewModel(new GradingApiService(_authState));
 
     public void NavigateToStudentRecords() =>
-        CurrentView = new StudentRecordsViewModel(new StudentApiService(_authState));
+        CurrentView = new StudentRecordsViewModel(new StudentApiService(_authState), _authState);
 
     public event PropertyChangedEventHandler? PropertyChanged;
     private void OnPropertyChanged([CallerMemberName] string? name = null)

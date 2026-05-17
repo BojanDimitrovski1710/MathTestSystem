@@ -65,8 +65,8 @@ public class LoginViewModel : INotifyPropertyChanged
 
         try
         {
-            string token = await _authService.LoginAsync(Username.Trim(), Password);
-            _authState.SetToken(token, Username.Trim());
+            (string token, string role) = await _authService.LoginAsync(Username.Trim(), Password);
+            _authState.SetToken(token, Username.Trim(), role);
             _app.NavigateHome();
         }
         catch (Exception ex)
