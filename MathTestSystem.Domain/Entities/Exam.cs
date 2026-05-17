@@ -2,6 +2,14 @@ namespace MathTestSystem.Domain.Entities;
 
 public class Exam
 {
+    public Exam(string examId, int studentId)
+    {
+        ExamId = examId;
+        StudentId = studentId;
+    }
+
+    private Exam() { } // EF Core
+
     public int Id { get; set; }
 
     /// <summary>
@@ -13,10 +21,10 @@ public class Exam
     /// <summary>
     /// The exam identifier as it appears in the uploaded XML (e.g. "1").
     /// </summary>
-    public string ExamId { get; set; } = string.Empty;
+    public string ExamId { get; set; }
 
     public int StudentId { get; set; }
-    public Student Student { get; set; } = null!;
+    public Student? Student { get; set; }
 
     public DateTime SubmittedAt { get; set; } = DateTime.UtcNow;
 

@@ -63,7 +63,7 @@ public class ExamGradingService : IGradingService
         }
         else
         {
-            teacher = await _teacherRepo.AddAsync(new Teacher { TeacherId = teacherId });
+            teacher = await _teacherRepo.AddAsync(new Teacher(teacherId));
         }
 
 
@@ -80,7 +80,7 @@ public class ExamGradingService : IGradingService
             await EnsureIdentityUserAsync(id);
 
         List<Student> newStudents = newStudentIds
-            .Select(id => new Student { StudentId = id, TeacherId = teacher.Id })
+            .Select(id => new Student(id, teacher.Id))
             .ToList();
 
         if (newStudents.Count > 0)
@@ -160,11 +160,8 @@ public class ExamGradingService : IGradingService
         {
             EvaluationResult evalResult = expressionCache[parsedTask.Expression];
 
-            ExamTask task = new()
+            ExamTask task = new(parsedTask.TaskId, parsedTask.Expression, parsedTask.StudentAnswer)
             {
-                TaskId = parsedTask.TaskId,
-                Expression = parsedTask.Expression,
-                StudentAnswer = parsedTask.StudentAnswer,
                 CorrectAnswer = evalResult.Success ? evalResult.Value : null,
                 IsCorrect = evalResult.Success && evalResult.Value == parsedTask.StudentAnswer,
                 ErrorMessage = evalResult.Success ? null : evalResult.ErrorCode
@@ -186,10 +183,8 @@ public class ExamGradingService : IGradingService
             ? Math.Round((decimal)correctCount / gradableCount * 100, 2)
             : 0m;
 
-        Exam exam = new()
+        Exam exam = new(parsedExam.ExamId, studentFk)
         {
-            ExamId = parsedExam.ExamId,
-            StudentId = studentFk,
             Score = score,
             Tasks = tasks
         };
