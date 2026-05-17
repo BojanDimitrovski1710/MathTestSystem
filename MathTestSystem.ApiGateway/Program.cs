@@ -1,4 +1,3 @@
-using MathTestSystem.ApiGateway.Endpoints;
 using MathTestSystem.Infrastructure.Data;
 using MathTestSystem.Infrastructure.Extensions;
 using Microsoft.AspNetCore.Identity;
@@ -6,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 string connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
@@ -40,7 +40,7 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapAuthEndpoints();
+app.MapControllers();
 app.MapReverseProxy();
 
 app.Run();
