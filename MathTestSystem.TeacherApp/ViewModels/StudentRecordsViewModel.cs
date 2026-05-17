@@ -109,7 +109,7 @@ public class StudentOverviewViewModel(StudentSummaryResponse model)
     public Guid StudentUid => model.StudentUid;
     public int ExamCount => model.Exams.Count;
     public decimal AverageScore => model.Exams.Count > 0
-        ? Math.Round(model.Exams.Average(e => e.Score), 1)
+        ? Math.Round(model.Exams.Average(e => e.Score), 2)
         : 0m;
     public IReadOnlyList<ExamSummaryResponse> Exams => model.Exams;
 }

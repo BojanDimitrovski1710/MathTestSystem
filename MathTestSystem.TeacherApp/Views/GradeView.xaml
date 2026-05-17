@@ -80,7 +80,7 @@
                                 <Run Text="📋  Exam "/>
                                 <Run Text="{Binding ExamId, Mode=OneWay}"/>
                                 <Run Text="  —  Score: "/>
-                                <Run Text="{Binding Score, Mode=OneWay, StringFormat={}{0:F1}%}"
+                                <Run Text="{Binding Score, Mode=OneWay, StringFormat={}{0:F2}%}"
                                      FontWeight="Bold"/>
                             </TextBlock>
                         </HierarchicalDataTemplate>
