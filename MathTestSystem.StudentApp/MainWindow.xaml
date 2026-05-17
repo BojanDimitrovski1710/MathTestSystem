@@ -1,12 +1,51 @@
-﻿<Window x:Class="MathTestSystem.StudentApp.MainWindow"
+<Window x:Class="MathTestSystem.StudentApp.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:MathTestSystem.StudentApp"
-        mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
+        xmlns:vm="clr-namespace:MathTestSystem.StudentApp.ViewModels"
+        xmlns:views="clr-namespace:MathTestSystem.StudentApp.Views"
+        Title="Math Test System – Student Portal"
+        Height="680" Width="860" MinHeight="500" MinWidth="640">
 
-    </Grid>
+    <Window.DataContext>
+        <vm:AppViewModel/>
+    </Window.DataContext>
+
+    <DockPanel>
+
+        <!-- Header -->
+        <Border DockPanel.Dock="Top" Background="#1A5276" Padding="12,10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0"
+                           Text="Math Test System – Student Portal"
+                           Foreground="White" FontSize="17" FontWeight="SemiBold"
+                           VerticalAlignment="Center"/>
+
+                <Button Grid.Column="1"
+                        Content="Log Out"
+                        Command="{Binding LogoutCommand}"
+                        Visibility="{Binding IsLoggedIn, Converter={StaticResource BoolToVis}}"
+                        Background="Transparent" Foreground="#AED6F1"
+                        BorderBrush="#2E86C1"
+                        Padding="10,4"/>
+            </Grid>
+        </Border>
+
+        <!-- Content area -->
+        <ContentControl Content="{Binding CurrentView}">
+            <ContentControl.Resources>
+                <DataTemplate DataType="{x:Type vm:LoginViewModel}">
+                    <views:LoginView/>
+                </DataTemplate>
+                <DataTemplate DataType="{x:Type vm:DashboardViewModel}">
+                    <views:DashboardView/>
+                </DataTemplate>
+            </ContentControl.Resources>
+        </ContentControl>
+
+    </DockPanel>
 </Window>

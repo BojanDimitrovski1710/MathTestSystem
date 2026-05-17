@@ -1,9 +1,10 @@
-﻿<Application x:Class="MathTestSystem.StudentApp.App"
+<Application x:Class="MathTestSystem.StudentApp.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:MathTestSystem.StudentApp"
+             xmlns:views="clr-namespace:MathTestSystem.StudentApp.Views"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+        <views:InverseBoolToVisibilityConverter x:Key="InverseBoolToVis"/>
     </Application.Resources>
 </Application>
