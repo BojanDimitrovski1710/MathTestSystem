@@ -13,6 +13,7 @@ namespace MathTestSystem.GradingService.Controllers;
 public class ExamController(IGradingService gradingService) : ControllerBase
 {
     [HttpPost("grade")]
+    [DisableRequestSizeLimit]
     [Consumes("application/xml", "text/xml", "text/plain")]
     [ProducesResponseType<GradeExamResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
