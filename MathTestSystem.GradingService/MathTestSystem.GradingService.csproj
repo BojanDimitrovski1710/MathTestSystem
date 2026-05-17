@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Schemas\TeacherExam.xsd"/>
+    <EmbeddedResource Include="Schemas\TeacherExam.xsd" />
   </ItemGroup>
 
   <ItemGroup>
