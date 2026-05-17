@@ -6,6 +6,7 @@ using MathTestSystem.GradingService.Services;
 using MathTestSystem.Infrastructure.Data;
 using MathTestSystem.MathProcessor.Services;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 
 namespace MathTestSystem.GradingService.Tests;
@@ -30,7 +31,8 @@ public class ExamGradingServiceTests
         userManager.FindByNameAsync(Arg.Any<string>()).Returns((AppUser?)null);
         userManager.CreateAsync(Arg.Any<AppUser>(), Arg.Any<string>()).Returns(IdentityResult.Success);
 
-        _service = new ExamGradingService(parser, evaluator, _teacherRepo, _studentRepo, _examRepo, userManager);
+        _service = new ExamGradingService(parser, evaluator, _teacherRepo, _studentRepo, _examRepo, userManager,
+            Substitute.For<ILogger<ExamGradingService>>());
 
         // Batch existence checks — default to empty (nothing pre-exists)
         _teacherRepo.GetExistingIdsAsync(Arg.Any<IEnumerable<string>>()).Returns(new HashSet<string>());
