@@ -14,6 +14,7 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
                 <Button Grid.Column="0"
@@ -28,6 +29,14 @@
                            Text="Math Test System – Teacher Portal"
                            Foreground="White" FontSize="17" FontWeight="SemiBold"
                            VerticalAlignment="Center"/>
+
+                <Button Grid.Column="2"
+                        Content="Log Out"
+                        Command="{Binding LogoutCommand}"
+                        Visibility="{Binding IsLoggedIn, Converter={StaticResource BoolToVis}}"
+                        Background="Transparent" Foreground="#BDC3C7"
+                        BorderBrush="#5D6D7E"
+                        Padding="10,4"/>
             </Grid>
         </Border>
 

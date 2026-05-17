@@ -15,23 +15,38 @@ public class AppViewModel : INotifyPropertyChanged
     public AppViewModel()
     {
         GoHomeCommand = new RelayCommand(GoHome);
+        LogoutCommand = new RelayCommand(Logout);
         NavigateToLogin();
     }
 
     public ICommand GoHomeCommand { get; }
+    public ICommand LogoutCommand { get; }
 
     public object CurrentView
     {
         get => _currentView;
-        private set { _currentView = value; OnPropertyChanged(); OnPropertyChanged(nameof(ShowBackButton)); }
+        private set
+        {
+            _currentView = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(ShowBackButton));
+            OnPropertyChanged(nameof(IsLoggedIn));
+        }
     }
 
     public bool ShowBackButton => CurrentView is not HomeViewModel and not LoginViewModel;
+    public bool IsLoggedIn => CurrentView is not LoginViewModel;
 
     private void NavigateToLogin() =>
         CurrentView = new LoginViewModel(new AuthApiService(), _authState, this);
 
     private void GoHome() => NavigateHome();
+
+    private void Logout()
+    {
+        _authState.Clear();
+        NavigateToLogin();
+    }
 
     public void NavigateHome() => CurrentView = new HomeViewModel(this);
 
