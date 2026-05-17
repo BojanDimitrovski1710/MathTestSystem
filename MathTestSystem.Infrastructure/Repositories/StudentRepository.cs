@@ -24,6 +24,7 @@ public class StudentRepository : IStudentRepository
     public async Task<Student?> GetByStudentIdAsync(string studentId)
     {
         return await _context.Students
+            .Include(s => s.Teacher)
             .FirstOrDefaultAsync(s => s.StudentId == studentId);
     }
 
