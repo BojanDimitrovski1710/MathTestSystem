@@ -2,35 +2,30 @@ using MathTestSystem.Domain.Constants;
 using MathTestSystem.Domain.Entities;
 using MathTestSystem.Domain.Interfaces;
 using MathTestSystem.StudentService.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
-namespace MathTestSystem.StudentService.Endpoints;
+namespace MathTestSystem.StudentService.Controllers;
 
-public static class TeacherEndpoints
+[ApiController]
+[Route("api/teachers")]
+[Authorize]
+[Tags("Teachers")]
+public class TeacherController(
+    ITeacherRepository teacherRepo,
+    IStudentRepository studentRepo,
+    IExamRepository examRepo) : ControllerBase
 {
-    public static void MapTeacherEndpoints(this WebApplication app)
-    {
-        RouteGroupBuilder group = app.MapGroup("/api/teachers")
-            .WithTags("Teachers");
-
-        group.MapGet("/{teacherId}/students", GetStudents)
-            .WithName("GetTeacherStudents")
-            .WithSummary("Returns all students and their exam summaries for the given teacher.")
-            .Produces<IReadOnlyList<StudentSummaryResponse>>()
-            .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .RequireAuthorization();
-    }
-
-    private static async Task<IResult> GetStudents(
-        string teacherId,
-        ITeacherRepository teacherRepo,
-        IStudentRepository studentRepo,
-        IExamRepository examRepo)
+    [HttpGet("{teacherId}/students")]
+    [ProducesResponseType<IReadOnlyList<StudentSummaryResponse>>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> GetStudents(string teacherId)
     {
         Teacher? teacher = await teacherRepo.GetByTeacherIdAsync(teacherId);
 
         if (teacher is null)
-            return Results.NotFound(ResultCodes.TeacherNotFound);
+            return NotFound(ResultCodes.TeacherNotFound);
 
         IEnumerable<Student> students = await studentRepo.GetByTeacherUidAsync(teacher.Uid);
 
@@ -53,6 +48,6 @@ public static class TeacherEndpoints
             response.Add(new StudentSummaryResponse(student.Uid, student.StudentId, examSummaries));
         }
 
-        return Results.Ok(response);
+        return Ok(response);
     }
 }

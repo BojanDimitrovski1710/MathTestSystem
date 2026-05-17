@@ -2,50 +2,29 @@ using MathTestSystem.Domain.Constants;
 using MathTestSystem.Domain.Entities;
 using MathTestSystem.Domain.Interfaces;
 using MathTestSystem.StudentService.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
-namespace MathTestSystem.StudentService.Endpoints;
+namespace MathTestSystem.StudentService.Controllers;
 
-public static class StudentEndpoints
+[ApiController]
+[Route("api/students")]
+[Authorize]
+[Tags("Students")]
+public class StudentController(
+    IStudentRepository studentRepo,
+    IExamRepository examRepo) : ControllerBase
 {
-    public static void MapStudentEndpoints(this WebApplication app)
-    {
-        RouteGroupBuilder group = app.MapGroup("/api/students")
-            .WithTags("Students");
-
-        group.MapGet("/{studentId}/dashboard", GetDashboard)
-            .WithName("GetStudentDashboard")
-            .WithSummary("Returns overall stats and a per-teacher exam breakdown for the given student.")
-            .Produces<StudentDashboardResponse>()
-            .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .RequireAuthorization();
-
-        group.MapGet("/{studentUid:guid}/exams", GetExams)
-            .WithName("GetStudentExams")
-            .WithSummary("Returns a summary of all exams for the given student.")
-            .Produces<IReadOnlyList<ExamSummaryResponse>>()
-            .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .RequireAuthorization();
-
-        group.MapGet("/{studentUid:guid}/exams/{examUid:guid}", GetExamDetail)
-            .WithName("GetStudentExamDetail")
-            .WithSummary("Returns the full detail of a single exam, including all tasks.")
-            .Produces<ExamDetailResponse>()
-            .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .RequireAuthorization();
-    }
-
-    private static async Task<IResult> GetDashboard(
-        string studentId,
-        IStudentRepository studentRepo,
-        IExamRepository examRepo)
+    [HttpGet("{studentId}/dashboard")]
+    [ProducesResponseType<StudentDashboardResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> GetDashboard(string studentId)
     {
         Student? student = await studentRepo.GetByStudentIdAsync(studentId);
 
         if (student is null)
-            return Results.NotFound(ResultCodes.StudentNotFound);
+            return NotFound(ResultCodes.StudentNotFound);
 
         IEnumerable<Exam> exams = await examRepo.GetByStudentUidAsync(student.Uid);
         List<Exam> examList = exams.ToList();
@@ -96,18 +75,19 @@ public static class StudentEndpoints
             overallScore,
             [teacherEntry]);
 
-        return Results.Ok(response);
+        return Ok(response);
     }
 
-    private static async Task<IResult> GetExams(
-        Guid studentUid,
-        IStudentRepository studentRepo,
-        IExamRepository examRepo)
+    [HttpGet("{studentUid:guid}/exams")]
+    [ProducesResponseType<IReadOnlyList<ExamSummaryResponse>>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> GetExams(Guid studentUid)
     {
         Student? student = await studentRepo.GetByUidAsync(studentUid);
 
         if (student is null)
-            return Results.NotFound(ResultCodes.StudentNotFound);
+            return NotFound(ResultCodes.StudentNotFound);
 
         IEnumerable<Exam> exams = await examRepo.GetByStudentUidAsync(student.Uid);
 
@@ -121,24 +101,24 @@ public static class StudentEndpoints
                 e.Tasks.Count(t => t.IsCorrect)))
             .ToList();
 
-        return Results.Ok(response);
+        return Ok(response);
     }
 
-    private static async Task<IResult> GetExamDetail(
-        Guid studentUid,
-        Guid examUid,
-        IStudentRepository studentRepo,
-        IExamRepository examRepo)
+    [HttpGet("{studentUid:guid}/exams/{examUid:guid}")]
+    [ProducesResponseType<ExamDetailResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> GetExamDetail(Guid studentUid, Guid examUid)
     {
         Student? student = await studentRepo.GetByUidAsync(studentUid);
 
         if (student is null)
-            return Results.NotFound(ResultCodes.StudentNotFound);
+            return NotFound(ResultCodes.StudentNotFound);
 
         Exam? exam = await examRepo.GetWithTasksAsync(examUid);
 
         if (exam is null || exam.Student.Uid != student.Uid)
-            return Results.NotFound(ResultCodes.ExamNotFound);
+            return NotFound(ResultCodes.ExamNotFound);
 
         ExamDetailResponse response = new(
             exam.Uid,
@@ -155,6 +135,6 @@ public static class StudentEndpoints
                     t.ErrorMessage))
                 .ToList());
 
-        return Results.Ok(response);
+        return Ok(response);
     }
 }
