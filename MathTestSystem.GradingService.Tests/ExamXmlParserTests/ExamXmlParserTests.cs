@@ -137,55 +137,46 @@ public class ExamXmlParserTests
     [Fact]
     public void Parse_MissingTeacherId_ThrowsWithCorrectCode()
     {
-        string xml = "<Teacher><Students></Students></Teacher>";
+        string xml = CommonHelpers.BuildXmlWithoutTeacherId();
 
         InvalidOperationException ex = Assert.Throws<InvalidOperationException>(() => _parser.Parse(xml));
-        Assert.Equal(ResultCodes.XmlTeacherIdMissing, ex.Message);
+        Assert.StartsWith(ResultCodes.XmlSchemaValidationFailed, ex.Message);
     }
 
     [Fact]
     public void Parse_MissingStudentsElement_ThrowsWithCorrectCode()
     {
-        string xml = "<Teacher ID=\"11111\"></Teacher>";
+        string xml = CommonHelpers.BuildXmlWithoutStudentsElement();
 
         InvalidOperationException ex = Assert.Throws<InvalidOperationException>(() => _parser.Parse(xml));
-        Assert.Equal(ResultCodes.XmlStudentsMissing, ex.Message);
+        Assert.StartsWith(ResultCodes.XmlSchemaValidationFailed, ex.Message);
     }
 
     [Fact]
     public void Parse_MissingStudentId_ThrowsWithCorrectCode()
     {
-        string xml = CommonHelpers.BuildXml("11111",
-        [
-            new StudentXmlDto("12345", [new ExamXmlDto("1", [new TaskXmlDto("1", "2+3", "5")])])
-        ]).Replace("ID=\"12345\"", "");
+        string xml = CommonHelpers.BuildXmlWithoutStudentId();
 
         InvalidOperationException ex = Assert.Throws<InvalidOperationException>(() => _parser.Parse(xml));
-        Assert.Equal(ResultCodes.XmlStudentIdMissing, ex.Message);
+        Assert.StartsWith(ResultCodes.XmlSchemaValidationFailed, ex.Message);
     }
 
     [Fact]
     public void Parse_MissingExamId_ThrowsWithCorrectCode()
     {
-        string xml = CommonHelpers.BuildXml("11111",
-        [
-            new StudentXmlDto("12345", [new ExamXmlDto("1", [new TaskXmlDto("1", "2+3", "5")])])
-        ]).Replace("Id=\"1\"", "");
+        string xml = CommonHelpers.BuildXmlWithoutExamId();
 
         InvalidOperationException ex = Assert.Throws<InvalidOperationException>(() => _parser.Parse(xml));
-        Assert.Equal(ResultCodes.XmlExamIdMissing, ex.Message);
+        Assert.StartsWith(ResultCodes.XmlSchemaValidationFailed, ex.Message);
     }
 
     [Fact]
     public void Parse_MissingTaskId_ThrowsWithCorrectCode()
     {
-        string xml = CommonHelpers.BuildXml("11111",
-        [
-            new StudentXmlDto("12345", [new ExamXmlDto("1", [new TaskXmlDto("1", "2+3", "5")])])
-        ]).Replace("id=\"1\"", "");
+        string xml = CommonHelpers.BuildXmlWithoutTaskId();
 
         InvalidOperationException ex = Assert.Throws<InvalidOperationException>(() => _parser.Parse(xml));
-        Assert.Equal(ResultCodes.XmlTaskIdMissing, ex.Message);
+        Assert.StartsWith(ResultCodes.XmlSchemaValidationFailed, ex.Message);
     }
 
     [Fact]

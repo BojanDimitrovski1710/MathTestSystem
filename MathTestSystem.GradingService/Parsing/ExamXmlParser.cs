@@ -1,16 +1,19 @@
+using System.Reflection;
 using System.Xml.Linq;
+using System.Xml.Schema;
 using MathTestSystem.Domain.Constants;
 
 namespace MathTestSystem.GradingService.Parsing;
 
 public class ExamXmlParser : IExamXmlParser
 {
+    private static readonly XmlSchemaSet SchemaSet = LoadSchema();
+
     public ParsedTeacherExam Parse(string xml)
     {
-        XDocument doc = XDocument.Parse(xml);
-        XElement root = doc.Root ?? throw new InvalidOperationException(ResultCodes.XmlRootMissing);
+        XElement root = Validate(XDocument.Parse(xml));
 
-        string teacherId = (string?)root.Attribute("ID")
+        string teacherId = root.Attribute("ID")?.Value
             ?? throw new InvalidOperationException(ResultCodes.XmlTeacherIdMissing);
 
         XElement studentsElement = root.Element("Students")
@@ -24,38 +27,68 @@ public class ExamXmlParser : IExamXmlParser
         return new ParsedTeacherExam(teacherId, students);
     }
 
-    private static ParsedStudent ParseStudent(XElement studentElement)
+    // -------------------------------------------------------------------------
+    // Schema validation
+    // -------------------------------------------------------------------------
+
+    private static XElement Validate(XDocument doc)
     {
-        string studentId = (string?)studentElement.Attribute("ID")
-            ?? throw new InvalidOperationException(ResultCodes.XmlStudentIdMissing);
+        List<string> errors = [];
 
-        IReadOnlyList<ParsedExam> exams = studentElement
-            .Elements("Exam")
-            .Select(ParseExam)
-            .ToList();
+        doc.Validate(SchemaSet, (_, e) => errors.Add(e.Message));
 
-        return new ParsedStudent(studentId, exams);
+        if (errors.Count > 0)
+            throw new InvalidOperationException(
+                $"{ResultCodes.XmlSchemaValidationFailed}: {string.Join("; ", errors)}");
+
+        return doc.Root
+            ?? throw new InvalidOperationException(ResultCodes.XmlRootMissing);
     }
 
-    private static ParsedExam ParseExam(XElement examElement)
+    private static XmlSchemaSet LoadSchema()
     {
-        string examId = (string?)examElement.Attribute("Id")
-            ?? throw new InvalidOperationException(ResultCodes.XmlExamIdMissing);
+        Assembly assembly = Assembly.GetExecutingAssembly();
 
-        IReadOnlyList<ParsedTask> tasks = examElement
-            .Elements("Task")
-            .Select(ParseTask)
-            .ToList();
+        string resourceName = assembly
+            .GetManifestResourceNames()
+            .Single(n => n.EndsWith("TeacherExam.xsd"));
 
-        return new ParsedExam(examId, tasks);
+        using Stream stream = assembly.GetManifestResourceStream(resourceName)
+            ?? throw new InvalidOperationException(ResultCodes.XmlSchemaNotFound);
+
+        XmlSchemaSet set = new();
+        set.Add(null, System.Xml.XmlReader.Create(stream));
+        return set;
     }
 
-    private static ParsedTask ParseTask(XElement taskElement)
+    // -------------------------------------------------------------------------
+    // Parsing
+    // -------------------------------------------------------------------------
+
+    private static ParsedStudent ParseStudent(XElement student) =>
+        new(
+            StudentId: student.Attribute("ID")?.Value
+                ?? throw new InvalidOperationException(ResultCodes.XmlStudentIdMissing),
+            Exams: student
+                .Elements("Exam")
+                .Select(ParseExam)
+                .ToList());
+
+    private static ParsedExam ParseExam(XElement exam) =>
+        new(
+            ExamId: exam.Attribute("Id")?.Value
+                ?? throw new InvalidOperationException(ResultCodes.XmlExamIdMissing),
+            Tasks: exam
+                .Elements("Task")
+                .Select(ParseTask)
+                .ToList());
+
+    private static ParsedTask ParseTask(XElement task)
     {
-        string taskId = (string?)taskElement.Attribute("id")
+        string taskId = task.Attribute("id")?.Value
             ?? throw new InvalidOperationException(ResultCodes.XmlTaskIdMissing);
 
-        string content = taskElement.Value.Trim();
+        string content = task.Value.Trim();
         int equalsIndex = content.LastIndexOf('=');
 
         if (equalsIndex < 0)
