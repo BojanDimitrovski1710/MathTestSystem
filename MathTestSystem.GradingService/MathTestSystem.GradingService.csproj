@@ -9,10 +9,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Schemas\TeacherExam.xsd" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.8" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.8">
       <PrivateAssets>all</PrivateAssets>
@@ -25,6 +21,21 @@
     <ProjectReference Include="..\MathTestSystem.Domain\MathTestSystem.Domain.csproj" />
     <ProjectReference Include="..\MathTestSystem.Infrastructure\MathTestSystem.Infrastructure.csproj" />
     <ProjectReference Include="..\MathTestSystem.MathProcessor\MathTestSystem.MathProcessor.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Schemas\TeacherExam.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>TeacherExam.xsd</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Schemas\TeacherExam.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>TeacherExam.Designer.cs</LastGenOutput>
+    </None>
   </ItemGroup>
 
 </Project>
