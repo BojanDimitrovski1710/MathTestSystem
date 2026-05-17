@@ -2,6 +2,14 @@ namespace MathTestSystem.Domain.Entities;
 
 public class Student
 {
+    public Student(string studentId, int teacherId)
+    {
+        StudentId = studentId;
+        TeacherId = teacherId;
+    }
+
+    private Student() { } // EF Core
+
     public int Id { get; set; }
 
     /// <summary>
@@ -13,10 +21,10 @@ public class Student
     /// <summary>
     /// The student identifier as it appears in the uploaded XML (e.g. "12345").
     /// </summary>
-    public string StudentId { get; set; } = string.Empty;
+    public string StudentId { get; set; }
 
     public int TeacherId { get; set; }
-    public Teacher Teacher { get; set; } = null!;
+    public Teacher? Teacher { get; set; }
 
     public ICollection<Exam> Exams { get; set; } = new List<Exam>();
 }

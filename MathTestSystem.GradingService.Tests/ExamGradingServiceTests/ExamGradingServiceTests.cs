@@ -259,7 +259,7 @@ public class ExamGradingServiceTests
     [Fact]
     public async Task GradeAsync_TeacherAlreadyInDb_DoesNotCreateDuplicate()
     {
-        Teacher existing = new() { Id = 1, TeacherId = "11111" };
+        Teacher existing = new("11111") { Id = 1 };
         _teacherRepo.GetExistingIdsAsync(Arg.Any<IEnumerable<string>>()).Returns(new HashSet<string> { "11111" });
         _teacherRepo.GetByTeacherIdAsync("11111").Returns(existing);
 
