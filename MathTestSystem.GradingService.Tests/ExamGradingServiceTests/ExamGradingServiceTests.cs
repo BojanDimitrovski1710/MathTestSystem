@@ -26,14 +26,21 @@ public class ExamGradingServiceTests
             Substitute.For<IUserStore<AppUser>>(),
             null, null, null, null, null, null, null, null);
 
+        userManager.Users.Returns(new List<AppUser>().AsQueryable());
         userManager.FindByNameAsync(Arg.Any<string>()).Returns((AppUser?)null);
         userManager.CreateAsync(Arg.Any<AppUser>(), Arg.Any<string>()).Returns(IdentityResult.Success);
 
         _service = new ExamGradingService(parser, evaluator, _teacherRepo, _studentRepo, _examRepo, userManager);
 
-        _teacherRepo.GetByTeacherIdAsync(Arg.Any<string>()).Returns((Teacher?)null);
-        _studentRepo.GetByStudentIdAsync(Arg.Any<string>()).Returns((Student?)null);
+        // Batch existence checks — default to empty (nothing pre-exists)
+        _teacherRepo.GetExistingIdsAsync(Arg.Any<IEnumerable<string>>()).Returns(new HashSet<string>());
+        _studentRepo.GetExistingIdsAsync(Arg.Any<IEnumerable<string>>()).Returns(new HashSet<string>());
+        _studentRepo.GetByStudentIdsAsync(Arg.Any<IEnumerable<string>>()).Returns(new List<Student>());
 
+        // Fetch-by-id for existing entities
+        _teacherRepo.GetByTeacherIdAsync(Arg.Any<string>()).Returns((Teacher?)null);
+
+        // Single-entity saves
         _teacherRepo.AddAsync(Arg.Any<Teacher>()).Returns(call =>
         {
             Teacher t = call.Arg<Teacher>();
@@ -41,14 +48,16 @@ public class ExamGradingServiceTests
             return Task.FromResult(t);
         });
 
-        _studentRepo.AddAsync(Arg.Any<Student>()).Returns(call =>
+        // Bulk saves — assign IDs so studentMap is populated correctly
+        _studentRepo.AddRangeAsync(Arg.Any<IEnumerable<Student>>()).Returns(call =>
         {
-            Student s = call.Arg<Student>();
-            s.Id = 1;
-            return Task.FromResult(s);
+            int id = 1;
+            foreach (Student s in call.Arg<IEnumerable<Student>>())
+                s.Id = id++;
+            return Task.CompletedTask;
         });
 
-        _examRepo.AddAsync(Arg.Any<Exam>()).Returns(call => Task.FromResult(call.Arg<Exam>()));
+        _examRepo.AddRangeAsync(Arg.Any<IEnumerable<Exam>>()).Returns(Task.CompletedTask);
     }
 
     // -------------------------------------------------------------------------
@@ -221,9 +230,6 @@ public class ExamGradingServiceTests
     [Fact]
     public async Task GradeAsync_SameStudentAppearsMultipleTimes_NotDuplicated()
     {
-        Student existing = new() { Id = 1, StudentId = "12345", TeacherId = 1 };
-        _studentRepo.GetByStudentIdAsync("12345").Returns((Student?)null, existing);
-
         string xml = CommonHelpers.BuildXml("11111",
         [
             new StudentXmlDto("12345", [new ExamXmlDto("1", [new TaskXmlDto("1", "2+3", "5")])]),
@@ -232,7 +238,8 @@ public class ExamGradingServiceTests
 
         await _service.GradeAsync(xml);
 
-        await _studentRepo.Received(1).AddAsync(Arg.Any<Student>());
+        // Distinct() on studentIds means only one student entry is ever saved
+        await _studentRepo.Received(1).AddRangeAsync(Arg.Is<IEnumerable<Student>>(s => s.Count() == 1));
     }
 
     // -------------------------------------------------------------------------
@@ -253,6 +260,7 @@ public class ExamGradingServiceTests
     public async Task GradeAsync_TeacherAlreadyInDb_DoesNotCreateDuplicate()
     {
         Teacher existing = new() { Id = 1, TeacherId = "11111" };
+        _teacherRepo.GetExistingIdsAsync(Arg.Any<IEnumerable<string>>()).Returns(new HashSet<string> { "11111" });
         _teacherRepo.GetByTeacherIdAsync("11111").Returns(existing);
 
         string xml = ExamGradingServiceTestHelpers.BuildSingleTaskXml("2+3", "5");
