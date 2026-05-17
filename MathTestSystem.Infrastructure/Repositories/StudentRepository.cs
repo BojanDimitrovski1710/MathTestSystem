@@ -62,8 +62,14 @@ public class StudentRepository : IStudentRepository
 
     public async Task AddRangeAsync(IEnumerable<Student> students)
     {
-        _context.Students.AddRange(students);
-        await _context.SaveChangesAsync();
+        const int chunkSize = 200;
+        List<Student> list = students.ToList();
+
+        for (int i = 0; i < list.Count; i += chunkSize)
+        {
+            _context.Students.AddRange(list.Skip(i).Take(chunkSize));
+            await _context.SaveChangesAsync();
+        }
     }
 
     public async Task UpdateAsync(Student student)
