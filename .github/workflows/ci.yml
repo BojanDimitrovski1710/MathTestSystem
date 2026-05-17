@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+
+  test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: MathTestSystem
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Test – MathProcessor
+        run: >
+          dotnet test MathTestSystem.MathProcessor.Tests/MathTestSystem.MathProcessor.Tests.csproj
+          --configuration Release
+          --verbosity normal
+
+      - name: Test – GradingService
+        run: >
+          dotnet test MathTestSystem.GradingService.Tests/MathTestSystem.GradingService.Tests.csproj
+          --configuration Release
+          --verbosity normal
+
+  build-apps:
+    name: Build WPF Apps
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: MathTestSystem
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Build – TeacherApp
+        run: >
+          dotnet build MathTestSystem.TeacherApp/MathTestSystem.TeacherApp.csproj
+          --configuration Release
+
+      - name: Build – StudentApp
+        run: >
+          dotnet build MathTestSystem.StudentApp/MathTestSystem.StudentApp.csproj
+          --configuration Release
