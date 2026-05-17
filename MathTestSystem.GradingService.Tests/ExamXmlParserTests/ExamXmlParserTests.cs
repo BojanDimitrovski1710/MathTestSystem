@@ -203,4 +203,20 @@ public class ExamXmlParserTests
         InvalidOperationException ex = Assert.Throws<InvalidOperationException>(() => _parser.Parse(xml));
         Assert.Equal(ResultCodes.XmlTaskInvalidStudentAnswer, ex.Message);
     }
+
+    [Fact]
+    public void Parse_CompletelyInvalidXml_Throws()
+    {
+        Assert.Throws<InvalidOperationException>(() => _parser.Parse("this is not xml at all"));
+    }
+
+    [Fact]
+    public void Parse_EmptyStudentsList_ReturnsZeroStudents()
+    {
+        string xml = CommonHelpers.BuildXml("11111", []);
+
+        ParsedTeacherExam result = _parser.Parse(xml);
+
+        Assert.Empty(result.Students);
+    }
 }

@@ -259,6 +259,50 @@ public class ExamGradingServiceTests
     }
 
     [Fact]
+    public async Task GradeAsync_StudentAlreadyInDb_DoesNotCreateDuplicate()
+    {
+        Student existing = new("12345", 1) { Id = 1 };
+        _studentRepo.GetExistingIdsAsync(Arg.Any<IEnumerable<string>>()).Returns(new HashSet<string> { "12345" });
+        _studentRepo.GetByStudentIdsAsync(Arg.Any<IEnumerable<string>>()).Returns(new List<Student> { existing });
+
+        string xml = ExamGradingServiceTestHelpers.BuildSingleTaskXml("2+3", "5");
+
+        await _service.GradeAsync(xml);
+
+        await _studentRepo.DidNotReceive().AddRangeAsync(Arg.Any<IEnumerable<Student>>());
+    }
+
+    [Fact]
+    public async Task GradeAsync_OneOfThreeTasksCorrect_ScoreRoundsToTwoDecimalPlaces()
+    {
+        string xml = ExamGradingServiceTestHelpers.BuildXml(
+        [
+            new SimpleTaskDto("2+3", "5"),   // correct
+            new SimpleTaskDto("2+3", "99"),  // wrong
+            new SimpleTaskDto("2+3", "99")   // wrong
+        ]);
+
+        GradeExamResponse response = await _service.GradeAsync(xml);
+
+        Assert.Equal(33.33m, response.Students[0].Exams[0].Score);
+    }
+
+    [Fact]
+    public async Task GradeAsync_AllTasksHaveErrors_ScoreIsZero()
+    {
+        string xml = ExamGradingServiceTestHelpers.BuildXml(
+        [
+            new SimpleTaskDto("5/0", "99"),
+            new SimpleTaskDto("5/0", "99")
+        ]);
+
+        GradeExamResponse response = await _service.GradeAsync(xml);
+
+        Assert.Equal(0m, response.Students[0].Exams[0].Score);
+        Assert.All(response.Students[0].Exams[0].Tasks, t => Assert.True(t.HasError));
+    }
+
+    [Fact]
     public async Task GradeAsync_TeacherAlreadyInDb_DoesNotCreateDuplicate()
     {
         Teacher existing = new("11111") { Id = 1 };
