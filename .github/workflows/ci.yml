@@ -11,9 +11,6 @@ jobs:
   test:
     name: Build & Test
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: MathTestSystem
 
     steps:
       - uses: actions/checkout@v4
@@ -38,9 +35,6 @@ jobs:
   build-apps:
     name: Build WPF Apps
     runs-on: windows-latest
-    defaults:
-      run:
-        working-directory: MathTestSystem
 
     steps:
       - uses: actions/checkout@v4
