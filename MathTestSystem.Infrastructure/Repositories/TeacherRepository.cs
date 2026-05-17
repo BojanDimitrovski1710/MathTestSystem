@@ -27,6 +27,15 @@ public class TeacherRepository : ITeacherRepository
             .FirstOrDefaultAsync(t => t.TeacherId == teacherId);
     }
 
+    public async Task<HashSet<string>> GetExistingIdsAsync(IEnumerable<string> ids)
+    {
+        HashSet<string> idSet = ids.ToHashSet();
+        return [.. await _context.Teachers
+            .Where(t => idSet.Contains(t.TeacherId))
+            .Select(t => t.TeacherId)
+            .ToListAsync()];
+    }
+
     public async Task<IEnumerable<Teacher>> GetAllAsync()
     {
         return await _context.Teachers

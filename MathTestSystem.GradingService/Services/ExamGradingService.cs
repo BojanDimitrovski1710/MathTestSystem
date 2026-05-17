@@ -38,26 +38,89 @@ public class ExamGradingService : IGradingService
     {
         ParsedTeacherExam parsed = _parser.Parse(xml);
 
-        Teacher teacher = await GetOrCreateTeacherAsync(parsed.TeacherId);
+        string teacherId = parsed.TeacherId;
+        List<string> studentIds = parsed.Students.Select(s => s.StudentId).ToList();
 
-        List<StudentGradeResult> studentResults = [];
 
-        Dictionary<string, EvaluationResult> expressionCache = [];
+        HashSet<string> existingTeacherIds = await _teacherRepo.GetExistingIdsAsync([teacherId]);
+        HashSet<string> existingStudentIds = await _studentRepo.GetExistingIdsAsync(studentIds);
+
+
+        Dictionary<string, EvaluationResult> expressionCache = parsed.Students
+            .SelectMany(s => s.Exams)
+            .SelectMany(e => e.Tasks)
+            .Select(t => t.Expression)
+            .Distinct()
+            .AsParallel()
+            .Select(expr => (Expression: expr, Result: _evaluator.Evaluate(expr)))
+            .ToDictionary(x => x.Expression, x => x.Result);
+
+        Teacher teacher;
+
+        if (existingTeacherIds.Contains(teacherId))
+        {
+            teacher = (await _teacherRepo.GetByTeacherIdAsync(teacherId))!;
+        }
+        else
+        {
+            await EnsureIdentityUserAsync(teacherId);
+            teacher = await _teacherRepo.AddAsync(new Teacher { TeacherId = teacherId });
+        }
+
+
+        List<string> newStudentIds = studentIds.Where(id => !existingStudentIds.Contains(id)).ToList();
+
+        foreach (string id in newStudentIds)
+            await EnsureIdentityUserAsync(id);
+
+        List<Student> newStudents = newStudentIds
+            .Select(id => new Student { StudentId = id, TeacherId = teacher.Id })
+            .ToList();
+
+        if (newStudents.Count > 0)
+            await _studentRepo.AddRangeAsync(newStudents);
+
+        // Fetch full entities for existing students (need their PKs for exam FKs)
+        Dictionary<string, Student> studentMap = (await _studentRepo.GetByStudentIdsAsync(
+                studentIds.Where(existingStudentIds.Contains)))
+            .ToDictionary(s => s.StudentId);
+
+        // Merge newly saved students into the map (PKs populated by EF Core after AddRangeAsync)
+        foreach (Student s in newStudents)
+            studentMap[s.StudentId] = s;
+
+        List<(Exam Exam, IReadOnlyList<TaskGradeResult> TaskResults, string StudentId)> examMappings = [];
 
         foreach (ParsedStudent parsedStudent in parsed.Students)
         {
-            Student student = await GetOrCreateStudentAsync(parsedStudent.StudentId, teacher.Id);
-
-            List<ExamGradeResult> examResults = [];
+            Student student = studentMap[parsedStudent.StudentId];
 
             foreach (ParsedExam parsedExam in parsedStudent.Exams)
             {
-                ExamGradeResult examResult = await GradeExamAsync(parsedExam, student.Id, expressionCache);
-                examResults.Add(examResult);
-            }
+                (Exam exam, IReadOnlyList<TaskGradeResult> taskResults) =
+                    BuildExam(parsedExam, student.Id, expressionCache);
 
-            studentResults.Add(new StudentGradeResult(student.Uid, parsedStudent.StudentId, examResults));
+                examMappings.Add((exam, taskResults, parsedStudent.StudentId));
+            }
         }
+
+
+        await _examRepo.AddRangeAsync(examMappings.Select(x => x.Exam));
+
+
+        List<StudentGradeResult> studentResults = parsed.Students
+            .Select(parsedStudent =>
+            {
+                Student student = studentMap[parsedStudent.StudentId];
+
+                List<ExamGradeResult> examResults = examMappings
+                    .Where(x => x.StudentId == parsedStudent.StudentId)
+                    .Select(x => new ExamGradeResult(x.Exam.Uid, x.Exam.ExamId, x.Exam.Score, x.TaskResults))
+                    .ToList();
+
+                return new StudentGradeResult(student.Uid, parsedStudent.StudentId, examResults);
+            })
+            .ToList();
 
         return new GradeExamResponse(parsed.TeacherId, studentResults);
     }
@@ -66,38 +129,6 @@ public class ExamGradingService : IGradingService
     // Helpers
     // -------------------------------------------------------------------------
 
-    private async Task<Teacher> GetOrCreateTeacherAsync(string teacherId)
-    {
-        await EnsureIdentityUserAsync(teacherId);
-
-        Teacher? teacher = await _teacherRepo.GetByTeacherIdAsync(teacherId);
-
-        if (teacher is not null)
-            return teacher;
-
-        return await _teacherRepo.AddAsync(new Teacher { TeacherId = teacherId });
-    }
-
-    private async Task<Student> GetOrCreateStudentAsync(string studentId, int teacherFk)
-    {
-        await EnsureIdentityUserAsync(studentId);
-
-        Student? student = await _studentRepo.GetByStudentIdAsync(studentId);
-
-        if (student is not null)
-            return student;
-
-        return await _studentRepo.AddAsync(new Student
-        {
-            StudentId = studentId,
-            TeacherId = teacherFk
-        });
-    }
-
-    /// <summary>
-    /// Creates an Identity user for the given ID if one does not already exist.
-    /// The initial password equals the ID — spoofed auth for demo purposes.
-    /// </summary>
     private async Task EnsureIdentityUserAsync(string id)
     {
         if (await _userManager.FindByNameAsync(id) is not null)
@@ -106,12 +137,12 @@ public class ExamGradingService : IGradingService
         AppUser user = new() { UserName = id };
         IdentityResult result = await _userManager.CreateAsync(user, id);
 
-        if (!result.Succeeded)
+        if (!result.Succeeded && result.Errors.Any(e => e.Code != "DuplicateUserName"))
             throw new InvalidOperationException(
                 $"Failed to create Identity user for '{id}': {string.Join(", ", result.Errors.Select(e => e.Description))}");
     }
 
-    private async Task<ExamGradeResult> GradeExamAsync(
+    private static (Exam Exam, IReadOnlyList<TaskGradeResult> TaskResults) BuildExam(
         ParsedExam parsedExam,
         int studentFk,
         Dictionary<string, EvaluationResult> expressionCache)
@@ -121,11 +152,7 @@ public class ExamGradingService : IGradingService
 
         foreach (ParsedTask parsedTask in parsedExam.Tasks)
         {
-            if (!expressionCache.TryGetValue(parsedTask.Expression, out EvaluationResult evalResult))
-            {
-                evalResult = _evaluator.Evaluate(parsedTask.Expression);
-                expressionCache[parsedTask.Expression] = evalResult;
-            }
+            EvaluationResult evalResult = expressionCache[parsedTask.Expression];
 
             ExamTask task = new()
             {
@@ -161,8 +188,6 @@ public class ExamGradingService : IGradingService
             Tasks = tasks
         };
 
-        Exam saved = await _examRepo.AddAsync(exam);
-
-        return new ExamGradeResult(saved.Uid, parsedExam.ExamId, score, taskResults);
+        return (exam, taskResults);
     }
 }

@@ -38,6 +38,12 @@ public class ExamRepository : IExamRepository
         return exam;
     }
 
+    public async Task AddRangeAsync(IEnumerable<Exam> exams)
+    {
+        _context.Exams.AddRange(exams);
+        await _context.SaveChangesAsync();
+    }
+
     public async Task UpdateAsync(Exam exam)
     {
         bool exists = await _context.Exams.AnyAsync(e => e.Uid == exam.Uid);

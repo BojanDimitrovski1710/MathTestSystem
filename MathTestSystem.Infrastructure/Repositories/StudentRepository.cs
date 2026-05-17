@@ -28,6 +28,23 @@ public class StudentRepository : IStudentRepository
             .FirstOrDefaultAsync(s => s.StudentId == studentId);
     }
 
+    public async Task<HashSet<string>> GetExistingIdsAsync(IEnumerable<string> ids)
+    {
+        HashSet<string> idSet = ids.ToHashSet();
+        return [.. await _context.Students
+            .Where(s => idSet.Contains(s.StudentId))
+            .Select(s => s.StudentId)
+            .ToListAsync()];
+    }
+
+    public async Task<IEnumerable<Student>> GetByStudentIdsAsync(IEnumerable<string> studentIds)
+    {
+        HashSet<string> idSet = studentIds.ToHashSet();
+        return await _context.Students
+            .Where(s => idSet.Contains(s.StudentId))
+            .ToListAsync();
+    }
+
     public async Task<IEnumerable<Student>> GetByTeacherUidAsync(Guid teacherUid)
     {
         return await _context.Students
@@ -41,6 +58,12 @@ public class StudentRepository : IStudentRepository
         _context.Students.Add(student);
         await _context.SaveChangesAsync();
         return student;
+    }
+
+    public async Task AddRangeAsync(IEnumerable<Student> students)
+    {
+        _context.Students.AddRange(students);
+        await _context.SaveChangesAsync();
     }
 
     public async Task UpdateAsync(Student student)
