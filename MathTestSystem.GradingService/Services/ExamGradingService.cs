@@ -68,23 +68,25 @@ public class ExamGradingService : IGradingService
 
     private async Task<Teacher> GetOrCreateTeacherAsync(string teacherId)
     {
+        await EnsureIdentityUserAsync(teacherId);
+
         Teacher? teacher = await _teacherRepo.GetByTeacherIdAsync(teacherId);
 
         if (teacher is not null)
             return teacher;
 
-        await EnsureIdentityUserAsync(teacherId);
         return await _teacherRepo.AddAsync(new Teacher { TeacherId = teacherId });
     }
 
     private async Task<Student> GetOrCreateStudentAsync(string studentId, int teacherFk)
     {
+        await EnsureIdentityUserAsync(studentId);
+
         Student? student = await _studentRepo.GetByStudentIdAsync(studentId);
 
         if (student is not null)
             return student;
 
-        await EnsureIdentityUserAsync(studentId);
         return await _studentRepo.AddAsync(new Student
         {
             StudentId = studentId,
@@ -102,7 +104,11 @@ public class ExamGradingService : IGradingService
             return;
 
         AppUser user = new() { UserName = id };
-        await _userManager.CreateAsync(user, id);
+        IdentityResult result = await _userManager.CreateAsync(user, id);
+
+        if (!result.Succeeded)
+            throw new InvalidOperationException(
+                $"Failed to create Identity user for '{id}': {string.Join(", ", result.Errors.Select(e => e.Description))}");
     }
 
     private async Task<ExamGradeResult> GradeExamAsync(

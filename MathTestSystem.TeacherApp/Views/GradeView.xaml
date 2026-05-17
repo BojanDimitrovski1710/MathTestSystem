@@ -1,0 +1,109 @@
+<UserControl x:Class="MathTestSystem.TeacherApp.Views.GradeView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:MathTestSystem.TeacherApp.ViewModels">
+    <DockPanel>
+
+        <!-- Status bar -->
+        <StatusBar DockPanel.Dock="Bottom" Background="#ECF0F1">
+            <StatusBarItem>
+                <TextBlock Text="{Binding StatusMessage}" Padding="4,0"/>
+            </StatusBarItem>
+        </StatusBar>
+
+        <Grid Margin="16">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- File picker -->
+            <GroupBox Grid.Row="0" Header="XML Exam File" Margin="0,0,0,10" Padding="8">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox Grid.Column="0"
+                             Text="{Binding SelectedFilePath}"
+                             IsReadOnly="True"
+                             Padding="6,4" Margin="0,0,8,0"
+                             VerticalContentAlignment="Center"
+                             Background="#F8F9FA"
+                             FontFamily="Consolas"/>
+                    <Button Grid.Column="1"
+                            Content="Browse..."
+                            Command="{Binding BrowseCommand}"
+                            Padding="14,5"/>
+                </Grid>
+            </GroupBox>
+
+            <!-- Submit -->
+            <Button Grid.Row="1"
+                    Content="{Binding SubmitButtonText}"
+                    Command="{Binding SubmitCommand}"
+                    HorizontalAlignment="Left"
+                    Padding="28,8" Margin="0,0,0,12"
+                    FontSize="14">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Background" Value="#27AE60"/>
+                        <Setter Property="Foreground" Value="White"/>
+                        <Setter Property="FontWeight" Value="SemiBold"/>
+                        <Style.Triggers>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Background" Value="#BDC3C7"/>
+                                <Setter Property="Foreground" Value="#7F8C8D"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+
+            <!-- Results tree -->
+            <GroupBox Grid.Row="2" Header="Results">
+                <TreeView ItemsSource="{Binding Students}" Background="#FAFAFA">
+                    <TreeView.Resources>
+
+                        <HierarchicalDataTemplate DataType="{x:Type vm:StudentResultViewModel}"
+                                                  ItemsSource="{Binding Exams}">
+                            <TextBlock FontWeight="SemiBold" Padding="2">
+                                <Run Text="👤  Student: "/>
+                                <Run Text="{Binding StudentId, Mode=OneWay}"/>
+                            </TextBlock>
+                        </HierarchicalDataTemplate>
+
+                        <HierarchicalDataTemplate DataType="{x:Type vm:ExamResultViewModel}"
+                                                  ItemsSource="{Binding Tasks}">
+                            <TextBlock Padding="2">
+                                <Run Text="📋  Exam "/>
+                                <Run Text="{Binding ExamId, Mode=OneWay}"/>
+                                <Run Text="  —  Score: "/>
+                                <Run Text="{Binding Score, Mode=OneWay, StringFormat={}{0:F1}%}"
+                                     FontWeight="Bold"/>
+                            </TextBlock>
+                        </HierarchicalDataTemplate>
+
+                        <DataTemplate DataType="{x:Type vm:TaskResultViewModel}">
+                            <StackPanel Orientation="Horizontal" Margin="2,1">
+                                <TextBlock Text="{Binding StatusIcon, Mode=OneWay}"
+                                           Foreground="{Binding StatusColor, Mode=OneWay}"
+                                           FontWeight="Bold" Margin="0,0,8,0"/>
+                                <TextBlock>
+                                    <Run Text="{Binding Expression, Mode=OneWay}"/>
+                                    <Run Text=" = "/>
+                                    <Run Text="{Binding StudentAnswer, Mode=OneWay}"/>
+                                </TextBlock>
+                                <TextBlock Text="{Binding CorrectAnswerText, Mode=OneWay}"
+                                           Foreground="Gray" FontStyle="Italic"
+                                           Margin="8,0,0,0"/>
+                            </StackPanel>
+                        </DataTemplate>
+
+                    </TreeView.Resources>
+                </TreeView>
+            </GroupBox>
+        </Grid>
+    </DockPanel>
+</UserControl>

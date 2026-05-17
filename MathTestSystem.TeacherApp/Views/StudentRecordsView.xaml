@@ -1,0 +1,87 @@
+<UserControl x:Class="MathTestSystem.TeacherApp.Views.StudentRecordsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <DockPanel>
+
+        <!-- Status bar -->
+        <StatusBar DockPanel.Dock="Bottom" Background="#ECF0F1">
+            <StatusBarItem>
+                <TextBlock Text="{Binding StatusMessage}" Padding="4,0"/>
+            </StatusBarItem>
+        </StatusBar>
+
+        <Grid Margin="16">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Teacher ID input (admin only) -->
+            <GroupBox Grid.Row="0" Header="Teacher ID" Margin="0,0,0,12" Padding="8"
+                      Visibility="{Binding IsAdminMode, Converter={StaticResource BoolToVis}}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox Grid.Column="0"
+                             Text="{Binding TeacherId, UpdateSourceTrigger=PropertyChanged}"
+                             Padding="6,4" Margin="0,0,8,0"
+                             VerticalContentAlignment="Center"
+                             FontFamily="Consolas"/>
+                    <Button Grid.Column="1"
+                            Content="Load Students"
+                            Command="{Binding LoadCommand}"
+                            Padding="14,5">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Background" Value="#2980B9"/>
+                                <Setter Property="Foreground" Value="White"/>
+                                <Style.Triggers>
+                                    <Trigger Property="IsEnabled" Value="False">
+                                        <Setter Property="Background" Value="#BDC3C7"/>
+                                        <Setter Property="Foreground" Value="#7F8C8D"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </Grid>
+            </GroupBox>
+
+            <!-- Results / Empty state -->
+            <Grid Grid.Row="1">
+
+                <!-- Empty state -->
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center"
+                            Visibility="{Binding ShowEmptyState,
+                                         Converter={StaticResource BoolToVis}}">
+                    <TextBlock Text="👥" FontSize="48" HorizontalAlignment="Center"
+                               Margin="0,0,0,12"/>
+                    <TextBlock Text="No students have been entered into the system as of yet."
+                               FontSize="15" Foreground="#7F8C8D"
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- Student list -->
+                <ListView ItemsSource="{Binding Students}"
+                          Visibility="{Binding ShowEmptyState,
+                                       Converter={StaticResource InverseBoolToVis}}"
+                          Background="#FAFAFA">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="Student ID" Width="140"
+                                            DisplayMemberBinding="{Binding StudentId}"/>
+                            <GridViewColumn Header="Exams" Width="80"
+                                            DisplayMemberBinding="{Binding ExamCount}"/>
+                            <GridViewColumn Header="Average Score" Width="130"
+                                            DisplayMemberBinding="{Binding AverageScore,
+                                                StringFormat={}{0:F1}%}"/>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+
+            </Grid>
+        </Grid>
+    </DockPanel>
+</UserControl>

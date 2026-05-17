@@ -1,6 +1,8 @@
 <Solution>
   <Folder Name="/src/">
-    <Project Path="MathTestSystem.ApiGateway/MathTestSystem.ApiGateway.csproj" />
+    <Project Path="MathTestSystem.ApiGateway/MathTestSystem.ApiGateway.csproj">
+      <Build Solution="Debug|*" Project="false" />
+    </Project>
     <Project Path="MathTestSystem.Domain/MathTestSystem.Domain.csproj" />
     <Project Path="MathTestSystem.GradingService/MathTestSystem.GradingService.csproj" />
     <Project Path="MathTestSystem.Infrastructure/MathTestSystem.Infrastructure.csproj" Id="3f657854-dd77-47ec-9c83-2ab4dfcb372a" />

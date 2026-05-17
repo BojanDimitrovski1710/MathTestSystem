@@ -31,3 +31,12 @@ public record TaskResponse(
 {
     public bool HasError => ErrorCode is not null;
 }
+
+public record TeacherStudentsResponse(
+    string TeacherId,
+    IReadOnlyList<StudentOverviewResponse> Students);
+
+public record StudentOverviewResponse(
+    Guid StudentUid,
+    string StudentId,
+    IReadOnlyList<ExamSummaryResponse> Exams);
