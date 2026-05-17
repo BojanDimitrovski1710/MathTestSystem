@@ -1,46 +1,41 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<xs:schema id="NewDataSet" xmlns="" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
   <xs:element name="Teacher">
     <xs:complexType>
       <xs:sequence>
-        <xs:element name="Students" minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="Students">
           <xs:complexType>
             <xs:sequence>
-              <xs:element name="Student" minOccurs="0" maxOccurs="unbounded">
+              <xs:element name="Student" maxOccurs="unbounded">
                 <xs:complexType>
                   <xs:sequence>
-                    <xs:element name="Exam" minOccurs="0" maxOccurs="unbounded">
+                    <xs:element name="Exam" maxOccurs="unbounded">
                       <xs:complexType>
                         <xs:sequence>
-                          <xs:element name="Task" nillable="true" minOccurs="0" maxOccurs="unbounded">
+                          <xs:element name="Task" maxOccurs="unbounded">
                             <xs:complexType>
-                              <xs:simpleContent msdata:ColumnName="Task_Text" msdata:Ordinal="1">
+                              <xs:simpleContent>
                                 <xs:extension base="xs:string">
-                                  <xs:attribute name="id" type="xs:string" />
+                                  <xs:attribute name="id" type="xs:string" use="required"/>
                                 </xs:extension>
                               </xs:simpleContent>
                             </xs:complexType>
                           </xs:element>
                         </xs:sequence>
-                        <xs:attribute name="Id" type="xs:string" />
+                        <xs:attribute name="Id" type="xs:string" use="required"/>
                       </xs:complexType>
                     </xs:element>
                   </xs:sequence>
-                  <xs:attribute name="ID" type="xs:string" />
+                  <xs:attribute name="ID" type="xs:string" use="required"/>
                 </xs:complexType>
               </xs:element>
             </xs:sequence>
           </xs:complexType>
         </xs:element>
       </xs:sequence>
-      <xs:attribute name="ID" type="xs:string" />
+      <xs:attribute name="ID" type="xs:string" use="required"/>
     </xs:complexType>
   </xs:element>
-  <xs:element name="NewDataSet" msdata:IsDataSet="true" msdata:UseCurrentLocale="true">
-    <xs:complexType>
-      <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:element ref="Teacher" />
-      </xs:choice>
-    </xs:complexType>
-  </xs:element>
+
 </xs:schema>

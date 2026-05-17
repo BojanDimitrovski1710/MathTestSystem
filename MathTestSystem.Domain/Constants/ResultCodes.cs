@@ -17,14 +17,11 @@ public static class ResultCodes
 
     #region Xml
 
+    // Schema errors — thrown by XmlProcessor when the document violates the XSD.
     public const string XmlSchemaNotFound = "XML_SCHEMA_NOT_FOUND";
     public const string XmlSchemaValidationFailed = "XML_SCHEMA_VALIDATION_FAILED";
-    public const string XmlRootMissing = "XML_ROOT_MISSING";
-    public const string XmlTeacherIdMissing = "XML_TEACHER_ID_MISSING";
-    public const string XmlStudentsMissing = "XML_STUDENTS_MISSING";
-    public const string XmlStudentIdMissing = "XML_STUDENT_ID_MISSING";
-    public const string XmlExamIdMissing = "XML_EXAM_ID_MISSING";
-    public const string XmlTaskIdMissing = "XML_TASK_ID_MISSING";
+
+    // Task content errors — thrown during mapping after a schema-valid document is deserialized.
     public const string XmlTaskMissingEqualsSeparator = "XML_TASK_MISSING_EQUALS_SEPARATOR";
     public const string XmlTaskInvalidStudentAnswer = "XML_TASK_INVALID_STUDENT_ANSWER";
 
