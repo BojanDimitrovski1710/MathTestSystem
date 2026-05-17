@@ -24,18 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Schemas\TeacherExam.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>TeacherExam.xsd</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="Schemas\TeacherExam.xsd">
-      <Generator>MSDataSetGenerator</Generator>
-      <LastGenOutput>TeacherExam.Designer.cs</LastGenOutput>
-    </None>
+    <EmbeddedResource Include="Schemas\TeacherExam.xsd" />
   </ItemGroup>
 
 </Project>
