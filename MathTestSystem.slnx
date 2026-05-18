@@ -11,9 +11,7 @@
     <Project Path="Clients/MathTestSystem.TeacherApp/MathTestSystem.TeacherApp.csproj" />
   </Folder>
   <Folder Name="/src/Gateways/">
-    <Project Path="Gateways/MathTestSystem.ApiGateway/MathTestSystem.ApiGateway.csproj">
-      <Build Solution="Debug|*" Project="false" />
-    </Project>
+    <Project Path="Gateways/MathTestSystem.ApiGateway/MathTestSystem.ApiGateway.csproj" />
   </Folder>
   <Folder Name="/src/Services/" />
   <Folder Name="/src/Services/GradingService/">
