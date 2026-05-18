@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MathTestSystem.Domain\MathTestSystem.Domain.csproj" />
+    <ProjectReference Include="..\..\BuildingBlocks\MathTestSystem.Domain\MathTestSystem.Domain.csproj" />
   </ItemGroup>
 
 </Project>
