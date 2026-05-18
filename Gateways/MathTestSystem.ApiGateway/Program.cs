@@ -38,9 +38,7 @@ using (IServiceScope scope = app.Services.CreateScope())
 
         if (result.Succeeded)
         {
-            // Assign both Admin and Teacher roles to admin user
             await userManager.AddToRoleAsync(admin, "Admin");
-            await userManager.AddToRoleAsync(admin, "Teacher");
         }
     }
 }
