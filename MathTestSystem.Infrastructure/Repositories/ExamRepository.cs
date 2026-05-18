@@ -19,6 +19,7 @@ public class ExamRepository : IExamRepository
     {
         return await _context.Exams
             .Include(e => e.Tasks)
+            .Include(e => e.UploadedByTeacher)
             .Where(e => e.Student.Uid == studentUid)
             .ToListAsync();
     }
