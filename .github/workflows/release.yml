@@ -53,5 +53,4 @@ jobs:
             "./publish/TeacherApp/MathTestSystem.TeacherApp.exe" \
             "./publish/StudentApp/MathTestSystem.StudentApp.exe" \
             --title "Release ${{ github.ref_name }}" \
-            --generate-notes \
-            --clobber
+            --generate-notes
