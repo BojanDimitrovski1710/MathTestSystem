@@ -66,6 +66,13 @@ public class LoginViewModel : INotifyPropertyChanged
         try
         {
             (string token, string role) = await _authService.LoginAsync(Username.Trim(), Password);
+
+            if (role != "Teacher" && role != "Admin")
+            {
+                StatusMessage = "Access denied. This application is for teachers only.";
+                return;
+            }
+
             _authState.SetToken(token, Username.Trim(), role);
             _app.NavigateHome();
         }

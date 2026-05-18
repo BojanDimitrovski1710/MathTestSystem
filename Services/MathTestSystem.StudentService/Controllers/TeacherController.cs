@@ -9,7 +9,7 @@ namespace MathTestSystem.StudentService.Controllers;
 
 [ApiController]
 [Route("api/teachers")]
-[Authorize(Roles = "Student,Admin")]
+[Authorize(Roles = "Teacher,Admin")]
 [Tags("Teachers")]
 public class TeacherController(
     ITeacherRepository teacherRepo,

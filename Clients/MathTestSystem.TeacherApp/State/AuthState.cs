@@ -19,5 +19,6 @@ public class AuthState
     {
         Token = null;
         Username = null;
+        Role = null;
     }
 }
