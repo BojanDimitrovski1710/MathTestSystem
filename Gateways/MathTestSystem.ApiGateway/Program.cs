@@ -1,5 +1,6 @@
 using MathTestSystem.Infrastructure.Data;
 using MathTestSystem.Infrastructure.Extensions;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -21,11 +22,27 @@ builder.Services.AddReverseProxy()
 
 WebApplication app = builder.Build();
 
-// Run migrations on startup
+// Run migrations and seed admin user on startup
 using (IServiceScope scope = app.Services.CreateScope())
 {
     AppDbContext db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await db.Database.MigrateAsync();
+
+    UserManager<AppUser> userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
+
+    // Create admin user if it doesn't exist
+    if (await userManager.FindByNameAsync("admin") is null)
+    {
+        AppUser admin = new() { UserName = "admin" };
+        IdentityResult result = await userManager.CreateAsync(admin, "admin");
+
+        if (result.Succeeded)
+        {
+            // Assign both Admin and Teacher roles to admin user
+            await userManager.AddToRoleAsync(admin, "Admin");
+            await userManager.AddToRoleAsync(admin, "Teacher");
+        }
+    }
 }
 
 if (app.Environment.IsDevelopment())
