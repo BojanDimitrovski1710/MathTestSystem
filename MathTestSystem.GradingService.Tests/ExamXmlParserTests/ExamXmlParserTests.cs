@@ -211,12 +211,12 @@ public class ExamXmlParserTests
     }
 
     [Fact]
-    public void Parse_EmptyStudentsList_ReturnsZeroStudents()
+    public void Parse_EmptyStudentsList_ThrowsWithCorrectCode()
     {
+        // The XSD requires at least one Student — an empty list is schema-invalid.
         string xml = CommonHelpers.BuildXml("11111", []);
 
-        ParsedTeacherExam result = _parser.Parse(xml);
-
-        Assert.Empty(result.Students);
+        InvalidOperationException ex = Assert.Throws<InvalidOperationException>(() => _parser.Parse(xml));
+        Assert.StartsWith(ResultCodes.XmlSchemaValidationFailed, ex.Message);
     }
 }
