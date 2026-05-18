@@ -27,7 +27,7 @@ namespace MathTestSystem.Infrastructure.Migrations
                 columns: new[] { "Id", "UserName", "NormalizedUserName", "Email", "NormalizedEmail", "EmailConfirmed", "PasswordHash", "SecurityStamp", "ConcurrencyStamp", "PhoneNumber", "PhoneNumberConfirmed", "TwoFactorEnabled", "LockoutEnd", "LockoutEnabled", "AccessFailedCount" },
                 values: new object[] 
                 { 
-                    "admin-user-id", 
+                    "admin", 
                     "admin", 
                     "ADMIN",
                     null,
@@ -49,13 +49,13 @@ namespace MathTestSystem.Infrastructure.Migrations
             migrationBuilder.InsertData(
                 table: "AspNetUserRoles",
                 columns: new[] { "UserId", "RoleId" },
-                values: new object[] { "admin-user-id", "1" });
+                values: new object[] { "admin", "1" });
 
             // Assign Teacher role to admin user
             migrationBuilder.InsertData(
                 table: "AspNetUserRoles",
                 columns: new[] { "UserId", "RoleId" },
-                values: new object[] { "admin-user-id", "2" });
+                values: new object[] { "admin", "2" });
         }
 
         /// <inheritdoc />
@@ -65,18 +65,18 @@ namespace MathTestSystem.Infrastructure.Migrations
             migrationBuilder.DeleteData(
                 table: "AspNetUserRoles",
                 keyColumns: new[] { "UserId", "RoleId" },
-                keyValues: new object[] { "admin-user-id", "1" });
+                keyValues: new object[] { "admin", "1" });
 
             migrationBuilder.DeleteData(
                 table: "AspNetUserRoles",
                 keyColumns: new[] { "UserId", "RoleId" },
-                keyValues: new object[] { "admin-user-id", "2" });
+                keyValues: new object[] { "admin", "2" });
 
             // Remove admin user
             migrationBuilder.DeleteData(
                 table: "AspNetUsers",
                 keyColumn: "Id",
-                keyValue: "admin-user-id");
+                keyValue: "admin");
 
             // Remove roles
             migrationBuilder.DeleteData(
