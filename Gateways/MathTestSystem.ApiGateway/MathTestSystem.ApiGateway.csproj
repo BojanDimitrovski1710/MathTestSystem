@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MathTestSystem.Infrastructure\MathTestSystem.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\BuildingBlocks\MathTestSystem.Infrastructure\MathTestSystem.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

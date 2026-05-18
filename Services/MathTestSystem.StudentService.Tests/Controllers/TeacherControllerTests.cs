@@ -81,7 +81,7 @@ public class TeacherControllerTests
     // -------------------------------------------------------------------------
 
     private static Exam BuildExam(string examId) =>
-        new(examId, 1)
+        new(examId, 1, 1)
         {
             Score = 100m,
             Tasks = [new("1", "2+3", 5m) { CorrectAnswer = 5m, IsCorrect = true }]

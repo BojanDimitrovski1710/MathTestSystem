@@ -18,8 +18,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MathTestSystem.Domain\MathTestSystem.Domain.csproj" />
-    <ProjectReference Include="..\MathTestSystem.Infrastructure\MathTestSystem.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\BuildingBlocks\MathTestSystem.Domain\MathTestSystem.Domain.csproj" />
+    <ProjectReference Include="..\..\BuildingBlocks\MathTestSystem.Infrastructure\MathTestSystem.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

@@ -88,58 +88,57 @@ The system is split across four independently deployable units, each with a sing
 ```
 MathTestSystem/
 │
-├── MathTestSystem.TeacherApp/          # ── CLIENT APPLICATIONS ──────────────────────────
-│   ├── ViewModels/                     # MVVM — login, upload, results view models
-│   ├── Views/                          # WPF XAML windows and controls
-│   ├── Services/                       # HTTP client wrappers calling the gateway
-│   ├── Models/                         # Local DTOs (no shared assemblies with backend)
-│   ├── Commands/                       # ICommand implementations
-│   └── State/                          # Application state management
+├── Clients/                            # ── CLIENT APPLICATIONS ──────────────────────────
+│   ├── MathTestSystem.TeacherApp/      # WPF teacher client — login, XML upload, results
+│   │   ├── ViewModels/                 # MVVM — login, upload, results view models
+│   │   ├── Views/                      # WPF XAML windows and controls
+│   │   ├── Services/                   # HTTP client wrappers calling the gateway
+│   │   ├── Models/                     # Local DTOs (no shared assemblies with backend)
+│   │   ├── Commands/                   # ICommand implementations
+│   │   └── State/                      # Application state management
+│   └── MathTestSystem.StudentApp/      # WPF student client — login, analytics dashboard
+│       ├── ViewModels/
+│       ├── Views/
+│       ├── Services/
+│       ├── Models/
+│       ├── Commands/
+│       └── State/
 │
-├── MathTestSystem.StudentApp/          # WPF student client — login, analytics dashboard
-│   ├── ViewModels/
-│   ├── Views/
-│   ├── Services/
-│   ├── Models/
-│   ├── Commands/
-│   └── State/
-│
-├── MathTestSystem.ApiGateway/          # ── API GATEWAY ───────────────────────────────────
-│   ├── Controllers/                    # Auth controller — JWT issuance and login
-│   └── Models/                         # Login/token request-response models
+├── Gateways/                           # ── API GATEWAY ───────────────────────────────────
+│   └── MathTestSystem.ApiGateway/      # YARP reverse proxy — sole public entry point
+│       ├── Controllers/                # Auth controller — JWT issuance and login
+│       └── Models/                     # Login/token request-response models
 │                                       # Route config in appsettings.json (YARP)
 │
-├── MathTestSystem.GradingService/      # ── BACKEND MICROSERVICES ─────────────────────────
-│   ├── Controllers/                    # POST /api/exams — accepts XML uploads
-│   ├── Services/                       # ExamGradingService — orchestrates grading pipeline
-│   ├── Parsing/                        # ExamXmlParser + XmlProcessor — XSD validation
-│   ├── Models/                         # Grading response models
-│   └── Schemas/                        # TeacherExam.xsd — enforced XML contract
+├── Services/                           # ── BACKEND MICROSERVICES ─────────────────────────
+│   ├── MathTestSystem.GradingService/  # Write-heavy — accepts XML, grades, persists
+│   │   ├── Controllers/                # POST /api/exams — accepts XML uploads
+│   │   ├── Services/                   # ExamGradingService — orchestrates grading pipeline
+│   │   ├── Parsing/                    # ExamXmlParser + XmlProcessor — XSD validation
+│   │   ├── Models/                     # Grading response models
+│   │   └── Schemas/                    # TeacherExam.xsd — enforced XML contract
+│   ├── MathTestSystem.GradingService.Tests/
+│   ├── MathTestSystem.StudentService/  # Read-heavy — analytics endpoints
+│   │   ├── Controllers/                # GET endpoints for students and teachers
+│   │   └── Models/                     # Dashboard and summary response models
+│   └── MathTestSystem.StudentService.Tests/
 │
-├── MathTestSystem.StudentService/      # Read-only analytics service
-│   ├── Controllers/                    # GET endpoints for students and teachers
-│   └── Models/                         # Dashboard and summary response models
-│
-├── MathTestSystem.Domain/              # ── SHARED BUILDING BLOCKS ────────────────────────
-│   ├── Entities/                       # Teacher, Student, Exam, ExamTask
-│   ├── Interfaces/                     # Repository contracts
-│   └── Constants/                      # ResultCodes — structured error strings
-│
-├── MathTestSystem.Infrastructure/      # EF Core DbContext, repositories, Identity, JWT
-│   ├── Data/                           # AppDbContext + AppUser
-│   ├── Repositories/                   # Concrete EF Core repository implementations
-│   ├── Auth/                           # JWT generation helper
-│   ├── Extensions/                     # DI service registration helpers
-│   └── Migrations/                     # EF Core migration history
-│
-├── MathTestSystem.MathProcessor/       # Independent math engine (zero NuGet dependencies)
-│   ├── Services/                       # Tokenizer, Shunting-Yard evaluator
-│   ├── Models/                         # Token types, EvaluationResult
-│   └── Interfaces/                     # IExpressionEvaluator
-│
-├── MathTestSystem.GradingService.Tests/  # ── TESTS ───────────────────────────────────────
-├── MathTestSystem.MathProcessor.Tests/
-├── MathTestSystem.StudentService.Tests/
+├── BuildingBlocks/                     # ── SHARED BUILDING BLOCKS ────────────────────────
+│   ├── MathTestSystem.Domain/          # Entities, repository interfaces, result codes
+│   │   ├── Entities/                   # Teacher, Student, Exam, ExamTask
+│   │   ├── Interfaces/                 # Repository contracts
+│   │   └── Constants/                  # ResultCodes — structured error strings
+│   ├── MathTestSystem.Infrastructure/  # EF Core DbContext, repositories, Identity, JWT
+│   │   ├── Data/                       # AppDbContext + AppUser
+│   │   ├── Repositories/               # Concrete EF Core repository implementations
+│   │   ├── Auth/                       # JWT generation helper
+│   │   ├── Extensions/                 # DI service registration helpers
+│   │   └── Migrations/                 # EF Core migration history
+│   ├── MathTestSystem.MathProcessor/   # Independent math engine (zero NuGet dependencies)
+│   │   ├── Services/                   # Tokenizer, Shunting-Yard evaluator
+│   │   ├── Models/                     # Token types, EvaluationResult
+│   │   └── Interfaces/                 # IExpressionEvaluator
+│   └── MathTestSystem.MathProcessor.Tests/
 │
 ├── docker-compose.yml                  # Full backend stack (Gateway + Services + SQL Server)
 └── MathTestSystem.slnx                 # Global solution file

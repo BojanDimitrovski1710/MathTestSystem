@@ -9,15 +9,15 @@ ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
 # Copy project files for all referenced projects so restore can resolve dependencies
-COPY ["MathTestSystem.StudentService/MathTestSystem.StudentService.csproj", "MathTestSystem.StudentService/"]
-COPY ["MathTestSystem.Domain/MathTestSystem.Domain.csproj", "MathTestSystem.Domain/"]
-COPY ["MathTestSystem.Infrastructure/MathTestSystem.Infrastructure.csproj", "MathTestSystem.Infrastructure/"]
+COPY ["Services/MathTestSystem.StudentService/MathTestSystem.StudentService.csproj", "Services/MathTestSystem.StudentService/"]
+COPY ["BuildingBlocks/MathTestSystem.Domain/MathTestSystem.Domain.csproj", "BuildingBlocks/MathTestSystem.Domain/"]
+COPY ["BuildingBlocks/MathTestSystem.Infrastructure/MathTestSystem.Infrastructure.csproj", "BuildingBlocks/MathTestSystem.Infrastructure/"]
 
-RUN dotnet restore "MathTestSystem.StudentService/MathTestSystem.StudentService.csproj"
+RUN dotnet restore "Services/MathTestSystem.StudentService/MathTestSystem.StudentService.csproj"
 
 COPY . .
 
-WORKDIR "/src/MathTestSystem.StudentService"
+WORKDIR "/src/Services/MathTestSystem.StudentService"
 RUN dotnet build "MathTestSystem.StudentService.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish

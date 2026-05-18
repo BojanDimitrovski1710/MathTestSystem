@@ -22,7 +22,7 @@ jobs:
 
       - name: Publish TeacherApp
         run: >
-          dotnet publish MathTestSystem.TeacherApp/MathTestSystem.TeacherApp.csproj
+          dotnet publish Clients/MathTestSystem.TeacherApp/MathTestSystem.TeacherApp.csproj
           -c Release
           -r win-x64
           --self-contained true
@@ -34,7 +34,7 @@ jobs:
 
       - name: Publish StudentApp
         run: >
-          dotnet publish MathTestSystem.StudentApp/MathTestSystem.StudentApp.csproj
+          dotnet publish Clients/MathTestSystem.StudentApp/MathTestSystem.StudentApp.csproj
           -c Release
           -r win-x64
           --self-contained true
@@ -53,4 +53,5 @@ jobs:
             "./publish/TeacherApp/MathTestSystem.TeacherApp.exe" \
             "./publish/StudentApp/MathTestSystem.StudentApp.exe" \
             --title "Release ${{ github.ref_name }}" \
-            --generate-notes
+            --generate-notes \
+            --clobber

@@ -8,15 +8,15 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
-COPY ["MathTestSystem.ApiGateway/MathTestSystem.ApiGateway.csproj", "MathTestSystem.ApiGateway/"]
-COPY ["MathTestSystem.Domain/MathTestSystem.Domain.csproj", "MathTestSystem.Domain/"]
-COPY ["MathTestSystem.Infrastructure/MathTestSystem.Infrastructure.csproj", "MathTestSystem.Infrastructure/"]
+COPY ["Gateways/MathTestSystem.ApiGateway/MathTestSystem.ApiGateway.csproj", "Gateways/MathTestSystem.ApiGateway/"]
+COPY ["BuildingBlocks/MathTestSystem.Domain/MathTestSystem.Domain.csproj", "BuildingBlocks/MathTestSystem.Domain/"]
+COPY ["BuildingBlocks/MathTestSystem.Infrastructure/MathTestSystem.Infrastructure.csproj", "BuildingBlocks/MathTestSystem.Infrastructure/"]
 
-RUN dotnet restore "MathTestSystem.ApiGateway/MathTestSystem.ApiGateway.csproj"
+RUN dotnet restore "Gateways/MathTestSystem.ApiGateway/MathTestSystem.ApiGateway.csproj"
 
 COPY . .
 
-WORKDIR "/src/MathTestSystem.ApiGateway"
+WORKDIR "/src/Gateways/MathTestSystem.ApiGateway"
 RUN dotnet build "MathTestSystem.ApiGateway.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish

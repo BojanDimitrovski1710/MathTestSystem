@@ -196,7 +196,7 @@ public class StudentControllerTests
 
     private static Exam BuildExam(string examId, List<ExamTask> tasks)
     {
-        Exam exam = new(examId, 1) { Tasks = tasks };
+        Exam exam = new(examId, 1, 1) { Tasks = tasks };
         int correct = tasks.Count(t => t.IsCorrect);
         int total = tasks.Count;
         exam.Score = total > 0 ? Math.Round((decimal)correct / total * 100, 2) : 0m;

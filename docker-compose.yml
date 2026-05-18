@@ -21,7 +21,7 @@ services:
   grading-service:
     build:
       context: .
-      dockerfile: MathTestSystem.GradingService/Dockerfile
+      dockerfile: Services/MathTestSystem.GradingService/Dockerfile
     # Ports intentionally not exposed — only reachable via the API gateway
     # ports:
     #   - "5001:8080"
@@ -41,7 +41,7 @@ services:
   student-service:
     build:
       context: .
-      dockerfile: MathTestSystem.StudentService/Dockerfile
+      dockerfile: Services/MathTestSystem.StudentService/Dockerfile
     # Ports intentionally not exposed — only reachable via the API gateway
     # ports:
     #   - "5002:8080"
@@ -61,7 +61,7 @@ services:
   api-gateway:
     build:
       context: .
-      dockerfile: MathTestSystem.ApiGateway/Dockerfile
+      dockerfile: Gateways/MathTestSystem.ApiGateway/Dockerfile
     ports:
       - "5000:8080"  # Only public-facing entry point
     environment:
