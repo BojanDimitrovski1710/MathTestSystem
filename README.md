@@ -23,6 +23,12 @@ git clone https://github.com/BojanDimitrovski1710/MathTestSystem.git
 
 # Spin up the full backend (API Gateway, Grading Service, Student Service, SQL Server)
 docker compose up -d
+
+# By default only one user exists - an admin user with the following credentials:
+Username: admin
+Password: admin
+
+# Once an exam has been graded, teachers and students get added and can be logged in as by using their ID as both username and password (e.g. student with ID 12345 logs in with username "12345" and password "12345").
 ```
 
 > **Note:** The API Gateway is the single public entry point at `http://localhost:5000`. Backend services run on an isolated internal Docker network and are not directly reachable from the host. Once the backend is running, open `MathTestSystem.TeacherApp` or `MathTestSystem.StudentApp` in Visual Studio to run the desktop clients.
@@ -49,24 +55,30 @@ docker compose up -d
 The system is split across four independently deployable units, each with a single responsibility.
 
 ```
-┌────────────────────────────────────────────────────┐
-│              Docker Internal Network               │
-│                                                    │
-│  ┌──────────────┐       ┌───────────────────────┐  │
-│  │  API Gateway │ --->  │   Grading Service     │  │
-│  │  YARP :5000  │       │   (write-heavy)       │  │
-│  │  (public)    │       └───────────────────────┘  │
-│  │              │       ┌───────────────────────┐  │
-│  │              │ --->  │   Student Service     │  │
-│  └──────────────┘       │   (read-heavy)        │  │
-│         │               └───────────────────────┘  │
-│         ▼                        │                 │
-│  ┌──────────────┐                │                 │
-│  │  SQL Server  │<---------------┘                 │
-│  └──────────────┘                                  │
-└────────────────────────────────────────────────────┘
-         ▲
-    WPF Clients
+                            ┌───────────────────┐
+                            │    WPF Clients    │
+                            └─────────┬─────────┘
+                                      │
+                                      ▼ (External Port 5000)
+┌─────────────────────────────────────────────────────────────────────────┐
+│ internal                                                                │
+│                                                                         │
+│                           ┌───────────────────┐                         │
+│                           │    API Gateway    │                         │
+│                           └─────┬───┬───┬─────┘                         │
+│                                 │   │   │                               │
+│                 ┌───────────────┘   │   └───────────────┐               │
+│                 │                   │                   │               │
+│       ┌─────────▼─────────┐         │         ┌─────────▼─────────┐     │
+│       │  Grading Service  │         │         │  Student Service  │     │
+│       └─────────┬─────────┘         │         └─────────┬─────────┘     │
+│                 │                   │                   │               │
+│                 └───────────────┐   │   ┌───────────────┘               │
+│                                 │   │   │                               │
+│                           ┌─────▼───▼───▼─────┐                         │
+│                           │    SQL Server     │                         │
+│                           └───────────────────┘                         │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
 **API Gateway (YARP)** — the sole public entry point and the independent integration point for third-party applications. It handles JWT authentication, routes requests to the correct downstream service, and shields internal topology from clients.
@@ -220,17 +232,7 @@ The CI pipeline has two jobs — `test` (runs on `ubuntu-latest`) and `build-app
 
 ---
 
-## 9. Running Tests Locally
-
-```bash
-dotnet test MathTestSystem.MathProcessor.Tests/MathTestSystem.MathProcessor.Tests.csproj
-dotnet test MathTestSystem.GradingService.Tests/MathTestSystem.GradingService.Tests.csproj
-dotnet test MathTestSystem.StudentService.Tests/MathTestSystem.StudentService.Tests.csproj
-```
-
----
-
-## 10. Resetting the Database
+## 9. Resetting the Database
 
 ```bash
 # Tear down containers and delete the SQL Server volume
