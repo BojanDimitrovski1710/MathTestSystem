@@ -22,17 +22,41 @@ builder.Services.AddReverseProxy()
 
 WebApplication app = builder.Build();
 
-// Seed the admin user on startup
+// Seed roles and admin user on startup
 using (IServiceScope scope = app.Services.CreateScope())
 {
     AppDbContext db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await db.Database.MigrateAsync();
 
+    RoleManager<IdentityRole> roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     UserManager<AppUser> userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
-    if (await userManager.FindByNameAsync("admin") is null)
+
+    // Create roles if they don't exist
+    foreach (string role in new[] { "Admin", "Teacher", "Student" })
     {
-        AppUser admin = new() { UserName = "admin" };
+        if (!await roleManager.RoleExistsAsync(role))
+        {
+            await roleManager.CreateAsync(new IdentityRole(role));
+        }
+    }
+
+    // Seed or update admin user
+    AppUser? admin = await userManager.FindByNameAsync("admin");
+    if (admin is null)
+    {
+        admin = new AppUser { UserName = "admin" };
         await userManager.CreateAsync(admin, "admin");
+    }
+
+    // Ensure admin has both Admin and Teacher roles
+    if (!await userManager.IsInRoleAsync(admin, "Admin"))
+    {
+        await userManager.AddToRoleAsync(admin, "Admin");
+    }
+
+    if (!await userManager.IsInRoleAsync(admin, "Teacher"))
+    {
+        await userManager.AddToRoleAsync(admin, "Teacher");
     }
 }
 

@@ -19,6 +19,7 @@ public class ExamGradingService : IGradingService
     private readonly IStudentRepository _studentRepo;
     private readonly IExamRepository _examRepo;
     private readonly UserManager<AppUser> _userManager;
+    private readonly RoleManager<IdentityRole> _roleManager;
     private readonly ILogger<ExamGradingService> _logger;
 
     public ExamGradingService(
@@ -28,6 +29,7 @@ public class ExamGradingService : IGradingService
         IStudentRepository studentRepo,
         IExamRepository examRepo,
         UserManager<AppUser> userManager,
+        RoleManager<IdentityRole> roleManager,
         ILogger<ExamGradingService> logger)
     {
         _parser = parser;
@@ -36,6 +38,7 @@ public class ExamGradingService : IGradingService
         _studentRepo = studentRepo;
         _examRepo = examRepo;
         _userManager = userManager;
+        _roleManager = roleManager;
         _logger = logger;
     }
 
@@ -102,8 +105,13 @@ public class ExamGradingService : IGradingService
             .Select(u => u.UserName!)
             .ToList()];
 
-        foreach (string id in allIds.Where(id => !existingIdentityUsers.Contains(id)))
-            await EnsureIdentityUserAsync(id);
+        // Create teacher identity user if missing
+        if (!existingIdentityUsers.Contains(teacherId))
+            await EnsureIdentityUserAsync(teacherId, isStudent: false);
+
+        // Create student identity users if missing
+        foreach (string studentId in newStudentIds.Where(id => !existingIdentityUsers.Contains(id)))
+            await EnsureIdentityUserAsync(studentId, isStudent: true);
 
         List<Student> newStudents = newStudentIds
             .Select(id => new Student(id, teacher.Id))
@@ -164,7 +172,7 @@ public class ExamGradingService : IGradingService
     // Helpers
     // -------------------------------------------------------------------------
 
-    private async Task EnsureIdentityUserAsync(string id)
+    private async Task EnsureIdentityUserAsync(string id, bool isStudent = false)
     {
         if (await _userManager.FindByNameAsync(id) is not null)
             return;
@@ -178,6 +186,16 @@ public class ExamGradingService : IGradingService
             _logger.LogError("Failed to create Identity user for '{UserId}': {Errors}", id, errors);
             throw new InvalidOperationException($"Failed to create Identity user for '{id}': {errors}");
         }
+
+        // Ensure role exists
+        string role = isStudent ? "Student" : "Teacher";
+        if (!await _roleManager.RoleExistsAsync(role))
+        {
+            await _roleManager.CreateAsync(new IdentityRole(role));
+        }
+
+        // Assign role to user
+        await _userManager.AddToRoleAsync(user, role);
     }
 
     private static (Exam Exam, IReadOnlyList<TaskGradeResult> TaskResults) BuildExam(

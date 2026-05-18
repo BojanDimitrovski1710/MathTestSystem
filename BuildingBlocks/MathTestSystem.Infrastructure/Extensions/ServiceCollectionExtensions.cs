@@ -4,6 +4,7 @@ using MathTestSystem.Infrastructure.Auth;
 using MathTestSystem.Infrastructure.Data;
 using MathTestSystem.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,6 +34,7 @@ public static class ServiceCollectionExtensions
             options.Password.RequireNonAlphanumeric = false;
             options.Password.RequiredLength = 1;
         })
+        .AddRoles<IdentityRole>()
         .AddEntityFrameworkStores<AppDbContext>();
 
         services.AddScoped<ITeacherRepository, TeacherRepository>();
