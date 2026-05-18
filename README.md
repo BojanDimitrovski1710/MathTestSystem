@@ -229,15 +229,3 @@ dotnet test
 | `StudentService.Tests` | Controller endpoints, 404 handling, dashboard aggregation, multi-teacher grouping |
 
 The CI pipeline has two jobs — `test` (runs on `ubuntu-latest`) and `build-apps` (runs on `windows-latest` to build the WPF projects which require the Windows SDK).
-
----
-
-## 9. Resetting the Database
-
-```bash
-# Tear down containers and delete the SQL Server volume
-docker compose down -v
-
-# Bring everything back up — migrations apply automatically on startup
-docker compose up -d
-```
