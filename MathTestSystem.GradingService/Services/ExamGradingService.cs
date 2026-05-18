@@ -130,7 +130,7 @@ public class ExamGradingService : IGradingService
             foreach (ParsedExam parsedExam in parsedStudent.Exams)
             {
                 (Exam exam, IReadOnlyList<TaskGradeResult> taskResults) =
-                    BuildExam(parsedExam, student.Id, expressionCache);
+                    BuildExam(parsedExam, student.Id, teacher.Id, expressionCache);
 
                 examMappings.Add((exam, taskResults, parsedStudent.StudentId));
             }
@@ -183,6 +183,7 @@ public class ExamGradingService : IGradingService
     private static (Exam Exam, IReadOnlyList<TaskGradeResult> TaskResults) BuildExam(
         ParsedExam parsedExam,
         int studentFk,
+        int teacherFk,
         Dictionary<string, EvaluationResult> expressionCache)
     {
         List<ExamTask> tasks = [];
@@ -215,7 +216,7 @@ public class ExamGradingService : IGradingService
             ? Math.Round((decimal)correctCount / gradableCount * 100, 2)
             : 0m;
 
-        Exam exam = new(parsedExam.ExamId, studentFk)
+        Exam exam = new(parsedExam.ExamId, studentFk, teacherFk)
         {
             Score = score,
             Tasks = tasks

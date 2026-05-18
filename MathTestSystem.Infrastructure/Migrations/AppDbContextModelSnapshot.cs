@@ -48,12 +48,17 @@ namespace MathTestSystem.Infrastructure.Migrations
                     b.Property<Guid>("Uid")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int>("UploadedByTeacherId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("StudentId");
 
                     b.HasIndex("Uid")
                         .IsUnique();
+
+                    b.HasIndex("UploadedByTeacherId");
 
                     b.ToTable("Exams");
                 });
@@ -366,7 +371,15 @@ namespace MathTestSystem.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("MathTestSystem.Domain.Entities.Teacher", "UploadedByTeacher")
+                        .WithMany()
+                        .HasForeignKey("UploadedByTeacherId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.Navigation("Student");
+
+                    b.Navigation("UploadedByTeacher");
                 });
 
             modelBuilder.Entity("MathTestSystem.Domain.Entities.ExamTask", b =>

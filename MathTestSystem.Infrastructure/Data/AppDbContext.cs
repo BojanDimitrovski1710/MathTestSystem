@@ -95,6 +95,11 @@ public class AppDbContext : IdentityDbContext<AppUser>
             entity.Property(e => e.Score)
                 .HasPrecision(5, 2);
 
+            entity.HasOne(e => e.UploadedByTeacher)
+                .WithMany()
+                .HasForeignKey(e => e.UploadedByTeacherId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             entity.HasMany(e => e.Tasks)
                 .WithOne(t => t.Exam)
                 .HasForeignKey(t => t.ExamUid)
