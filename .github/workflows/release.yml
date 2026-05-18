@@ -1,0 +1,56 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    name: Build & Publish WPF Apps
+    runs-on: windows-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Publish TeacherApp
+        run: >
+          dotnet publish MathTestSystem.TeacherApp/MathTestSystem.TeacherApp.csproj
+          -c Release
+          -r win-x64
+          --self-contained true
+          -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:EnableCompressionInSingleFile=true
+          -p:ReadyToRun=true
+          -o ./publish/TeacherApp
+
+      - name: Publish StudentApp
+        run: >
+          dotnet publish MathTestSystem.StudentApp/MathTestSystem.StudentApp.csproj
+          -c Release
+          -r win-x64
+          --self-contained true
+          -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:EnableCompressionInSingleFile=true
+          -p:ReadyToRun=true
+          -o ./publish/StudentApp
+
+      - name: Create GitHub Release
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ github.ref_name }}" \
+            "./publish/TeacherApp/MathTestSystem.TeacherApp.exe" \
+            "./publish/StudentApp/MathTestSystem.StudentApp.exe" \
+            --title "Release ${{ github.ref_name }}" \
+            --generate-notes
