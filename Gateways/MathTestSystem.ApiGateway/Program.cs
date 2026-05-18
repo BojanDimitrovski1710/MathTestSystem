@@ -1,3 +1,4 @@
+using MathTestSystem.ApiGateway.Extensions;
 using MathTestSystem.Infrastructure.Data;
 using MathTestSystem.Infrastructure.Extensions;
 using Microsoft.AspNetCore.Identity;
@@ -17,23 +18,22 @@ string connectionString = builder.Configuration.GetConnectionString("DefaultConn
 builder.Services.AddInfrastructure(connectionString);
 builder.Services.AddJwtAuthentication(builder.Configuration);
 
+builder.Services.AddIdentity<AppUser, IdentityRole>()
+    .AddEntityFrameworkStores<AppDbContext>()
+    .AddDefaultTokenProviders();
+
 builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
 
 WebApplication app = builder.Build();
 
-// Seed the admin user on startup
+// Run migrations and seed admin user on startup
 using (IServiceScope scope = app.Services.CreateScope())
 {
     AppDbContext db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await db.Database.MigrateAsync();
 
-    UserManager<AppUser> userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
-    if (await userManager.FindByNameAsync("admin") is null)
-    {
-        AppUser admin = new() { UserName = "admin" };
-        await userManager.CreateAsync(admin, "admin");
-    }
+    await app.SeedDefaultIdentityAsync();
 }
 
 if (app.Environment.IsDevelopment())

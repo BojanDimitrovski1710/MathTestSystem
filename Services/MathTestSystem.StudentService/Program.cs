@@ -1,4 +1,3 @@
-using MathTestSystem.Infrastructure.Data;
 using MathTestSystem.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,12 +13,6 @@ builder.Services.AddInfrastructure(connectionString);
 builder.Services.AddJwtAuthentication(builder.Configuration);
 
 WebApplication app = builder.Build();
-
-using (IServiceScope scope = app.Services.CreateScope())
-{
-    AppDbContext db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    await db.Database.MigrateAsync();
-}
 
 if (app.Environment.IsDevelopment())
     app.MapOpenApi();

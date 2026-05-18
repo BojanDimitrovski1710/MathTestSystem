@@ -9,7 +9,7 @@ namespace MathTestSystem.StudentService.Controllers;
 
 [ApiController]
 [Route("api/students")]
-[Authorize]
+[Authorize(Roles = "Student,Admin")]
 [Tags("Students")]
 public class StudentController(
     IStudentRepository studentRepo,
@@ -20,6 +20,7 @@ public class StudentController(
     [ProducesResponseType<StudentDashboardResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetDashboard(string studentId)
     {
         logger.LogInformation("Dashboard requested for student {StudentId}", studentId);
@@ -97,6 +98,7 @@ public class StudentController(
     [ProducesResponseType<IReadOnlyList<ExamSummaryResponse>>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetExams(Guid studentUid)
     {
         logger.LogInformation("Exam list requested for student {StudentUid}", studentUid);
@@ -128,6 +130,7 @@ public class StudentController(
     [ProducesResponseType<ExamDetailResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetExamDetail(Guid studentUid, Guid examUid)
     {
         logger.LogInformation("Exam detail requested for student {StudentUid}, exam {ExamUid}", studentUid, examUid);

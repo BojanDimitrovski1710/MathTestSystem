@@ -27,12 +27,22 @@ public class ExamGradingServiceTests
             Substitute.For<IUserStore<AppUser>>(),
             null, null, null, null, null, null, null, null);
 
+        RoleManager<IdentityRole> roleManager = Substitute.For<RoleManager<IdentityRole>>(
+            Substitute.For<IRoleStore<IdentityRole>>(),
+            null, null, null, null);
+
         userManager.Users.Returns(new List<AppUser>().AsQueryable());
         userManager.FindByNameAsync(Arg.Any<string>()).Returns((AppUser?)null);
         userManager.CreateAsync(Arg.Any<AppUser>(), Arg.Any<string>()).Returns(IdentityResult.Success);
+        userManager.AddToRoleAsync(Arg.Any<AppUser>(), Arg.Any<string>()).Returns(IdentityResult.Success);
+
+        roleManager.RoleExistsAsync(Arg.Any<string>()).Returns(true);
+        roleManager.CreateAsync(Arg.Any<IdentityRole>()).Returns(IdentityResult.Success);
+
+        ILogger<ExamGradingService> logger = Substitute.For<ILogger<ExamGradingService>>();
 
         _service = new ExamGradingService(parser, evaluator, _teacherRepo, _studentRepo, _examRepo, userManager,
-            Substitute.For<ILogger<ExamGradingService>>());
+            roleManager, logger);
 
         // Batch existence checks — default to empty (nothing pre-exists)
         _teacherRepo.GetExistingIdsAsync(Arg.Any<IEnumerable<string>>()).Returns(new HashSet<string>());

@@ -8,7 +8,7 @@ namespace MathTestSystem.GradingService.Controllers;
 
 [ApiController]
 [Route("api/exams")]
-[Authorize]
+[Authorize(Roles = "Teacher,Admin")]
 [Tags("Exams")]
 public class ExamController(IGradingService gradingService, ILogger<ExamController> logger) : ControllerBase
 {
@@ -18,6 +18,7 @@ public class ExamController(IGradingService gradingService, ILogger<ExamControll
     [ProducesResponseType<GradeExamResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GradeExams()
     {
         using StreamReader reader = new(Request.Body);

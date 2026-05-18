@@ -26,9 +26,11 @@ public class AuthController(
         if (user is null || !await userManager.CheckPasswordAsync(user, request.Password))
             return Unauthorized(ResultCodes.InvalidCredentials);
 
-        // Role is "Admin" for the seeded admin account, "User" for everyone else.
-        // Downstream services can use this for fine-grained authorization if needed.
-        string role = request.Username == "admin" ? "Admin" : "User";
+        // Get all roles for this user
+        IList<string> userRoles = await userManager.GetRolesAsync(user);
+        
+        // Use the first role, or default to "User" if no roles assigned (shouldn't happen)
+        string role = userRoles.FirstOrDefault() ?? "User";
 
         string token = tokenService.GenerateToken(user.Id, user.UserName!, role);
 
