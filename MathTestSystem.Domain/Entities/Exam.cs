@@ -2,10 +2,11 @@ namespace MathTestSystem.Domain.Entities;
 
 public class Exam
 {
-    public Exam(string examId, int studentId)
+    public Exam(string examId, int studentId, int uploadedByTeacherId)
     {
         ExamId = examId;
         StudentId = studentId;
+        UploadedByTeacherId = uploadedByTeacherId;
     }
 
     private Exam() { } // EF Core
@@ -25,6 +26,13 @@ public class Exam
 
     public int StudentId { get; set; }
     public Student? Student { get; set; }
+
+    /// <summary>
+    /// The teacher who uploaded the XML that contained this exam.
+    /// A student may be graded by multiple teachers; this tracks which teacher uploaded each exam.
+    /// </summary>
+    public int UploadedByTeacherId { get; set; }
+    public Teacher? UploadedByTeacher { get; set; }
 
     public DateTime SubmittedAt { get; set; } = DateTime.UtcNow;
 

@@ -41,45 +41,54 @@ public class StudentController(
             ? Math.Round((decimal)overallCorrect / overallTotal * 100, 2)
             : 0m;
 
-        // In the current domain a student belongs to one teacher.
-        // The grouping structure supports multiple teachers if that changes.
-        TeacherDashboardEntry teacherEntry = new(
-            student.Teacher!.TeacherId,
-            overallCorrect,
-            overallTotal,
-            overallScore,
-            examList.Select(e =>
+        // Group exams by the teacher who uploaded them — a student can appear in
+        // XMLs from multiple teachers, so each teacher gets its own dashboard entry.
+        List<TeacherDashboardEntry> teacherEntries = examList
+            .GroupBy(e => e.UploadedByTeacher!.TeacherId)
+            .Select(group =>
             {
-                int correct = e.Tasks.Count(t => t.IsCorrect);
-                int total = e.Tasks.Count;
-                decimal score = total > 0
-                    ? Math.Round((decimal)correct / total * 100, 2)
+                int groupCorrect = group.Sum(e => e.Tasks.Count(t => t.IsCorrect));
+                int groupTotal = group.Sum(e => e.Tasks.Count);
+                decimal groupScore = groupTotal > 0
+                    ? Math.Round((decimal)groupCorrect / groupTotal * 100, 2)
                     : 0m;
 
-                return new ExamDashboardEntry(
-                    e.Uid,
-                    e.ExamId,
-                    e.SubmittedAt,
-                    score,
-                    correct,
-                    total,
-                    e.Tasks
-                        .Select(t => new TaskResponse(
-                            t.TaskId,
-                            t.Expression,
-                            t.StudentAnswer,
-                            t.CorrectAnswer,
-                            t.IsCorrect,
-                            t.ErrorMessage))
-                        .ToList());
-            }).ToList());
+                List<ExamDashboardEntry> examEntries = group.Select(e =>
+                {
+                    int correct = e.Tasks.Count(t => t.IsCorrect);
+                    int total = e.Tasks.Count;
+                    decimal score = total > 0
+                        ? Math.Round((decimal)correct / total * 100, 2)
+                        : 0m;
+
+                    return new ExamDashboardEntry(
+                        e.Uid,
+                        e.ExamId,
+                        e.SubmittedAt,
+                        score,
+                        correct,
+                        total,
+                        e.Tasks
+                            .Select(t => new TaskResponse(
+                                t.TaskId,
+                                t.Expression,
+                                t.StudentAnswer,
+                                t.CorrectAnswer,
+                                t.IsCorrect,
+                                t.ErrorMessage))
+                            .ToList());
+                }).ToList();
+
+                return new TeacherDashboardEntry(group.Key, groupCorrect, groupTotal, groupScore, examEntries);
+            })
+            .ToList();
 
         StudentDashboardResponse response = new(
             student.StudentId,
             overallCorrect,
             overallTotal,
             overallScore,
-            [teacherEntry]);
+            teacherEntries);
 
         return Ok(response);
     }
