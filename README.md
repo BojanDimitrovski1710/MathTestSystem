@@ -13,8 +13,6 @@ Pre-built Windows executables are attached to every [GitHub Release](../../relea
 | `MathTestSystem.TeacherApp.exe` | Upload XML exam files and view grading results |
 | `MathTestSystem.StudentApp.exe` | Log in as a student and review your exam analytics |
 
-> Releases are built automatically via GitHub Actions on every version tag. To cut a new release: `git tag v1.0.0 && git push --tags`
-
 ---
 
 ## 1. Quick Start
