@@ -7,9 +7,11 @@ services:
       ACCEPT_EULA: "Y"
       MSSQL_PID: "Express"
     ports:
-      - "1433:1433"
+      - "1433:1433"  # Exposed for local development (e.g. running services outside Docker)
     volumes:
       - sqlserver_data:/var/opt/mssql
+    networks:
+      - internal
     healthcheck:
       test: ["CMD", "/opt/mssql-tools18/bin/sqlcmd", "-S", "localhost", "-U", "sa", "-P", "MathTest_Sa!2024", "-Q", "SELECT 1", "-No"]
       interval: 10s
@@ -19,12 +21,19 @@ services:
   grading-service:
     build:
       context: .
-      dockerfile: MathTestSystem.GradingService/Dockerfile
-    ports:
-      - "5001:8080"
+      dockerfile: Services/MathTestSystem.GradingService/Dockerfile
+    # Ports intentionally not exposed — only reachable via the API gateway
+    # ports:
+    #   - "5001:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=MathTestDb;User Id=sa;Password=MathTest_Sa!2024;TrustServerCertificate=True;
+      - Jwt__Secret=MathTestSystem_SuperSecretKey_2024_DoNotUseInProduction!
+      - Jwt__Issuer=MathTestSystem
+      - Jwt__Audience=MathTestSystem
+      - Jwt__ExpiryMinutes=60
+    networks:
+      - internal
     depends_on:
       sqlserver:
         condition: service_healthy
@@ -32,15 +41,51 @@ services:
   student-service:
     build:
       context: .
-      dockerfile: MathTestSystem.StudentService/Dockerfile
-    ports:
-      - "5002:8080"
+      dockerfile: Services/MathTestSystem.StudentService/Dockerfile
+    # Ports intentionally not exposed — only reachable via the API gateway
+    # ports:
+    #   - "5002:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=MathTestDb;User Id=sa;Password=MathTest_Sa!2024;TrustServerCertificate=True;
+      - Jwt__Secret=MathTestSystem_SuperSecretKey_2024_DoNotUseInProduction!
+      - Jwt__Issuer=MathTestSystem
+      - Jwt__Audience=MathTestSystem
+      - Jwt__ExpiryMinutes=60
+    networks:
+      - internal
     depends_on:
       sqlserver:
         condition: service_healthy
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: Gateways/MathTestSystem.ApiGateway/Dockerfile
+    ports:
+      - "5000:8080"  # Only public-facing entry point
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=MathTestDb;User Id=sa;Password=MathTest_Sa!2024;TrustServerCertificate=True;
+      - Jwt__Secret=MathTestSystem_SuperSecretKey_2024_DoNotUseInProduction!
+      - Jwt__Issuer=MathTestSystem
+      - Jwt__Audience=MathTestSystem
+      - Jwt__ExpiryMinutes=60
+      - ReverseProxy__Clusters__grading-cluster__Destinations__grading-service__Address=http://grading-service:8080/
+      - ReverseProxy__Clusters__student-cluster__Destinations__student-service__Address=http://student-service:8080/
+    networks:
+      - internal
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      grading-service:
+        condition: service_started
+      student-service:
+        condition: service_started
+
+networks:
+  internal:
+    driver: bridge
 
 volumes:
   sqlserver_data:

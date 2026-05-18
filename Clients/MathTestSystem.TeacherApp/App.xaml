@@ -1,0 +1,11 @@
+﻿<Application x:Class="MathTestSystem.TeacherApp.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:MathTestSystem.TeacherApp"
+             xmlns:views="clr-namespace:MathTestSystem.TeacherApp.Views"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+        <views:InverseBoolToVisibilityConverter x:Key="InverseBoolToVis"/>
+    </Application.Resources>
+</Application>
